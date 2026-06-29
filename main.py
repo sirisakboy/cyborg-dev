@@ -8,6 +8,10 @@ import random
 import base64
 from datetime import datetime
 from PIL import Image, ImageTk
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env"))
 
 try:
     from tkinterdnd2 import DND_FILES, TkinterDnD

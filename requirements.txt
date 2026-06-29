@@ -1,3 +1,4 @@
 requests
 Pillow
 tkinterdnd2
+python-dotenv
