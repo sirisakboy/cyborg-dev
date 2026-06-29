@@ -37,6 +37,8 @@ class UltimateCyborgTool:
         self.neon_red = "#FF0055"
         self.neon_green = "#39FF14"
         self.neon_yellow = "#FFCC00" # สีสำหรับปุ่ม BUG_SCAN
+        self.neon_purple = "#BF00FF" # สีสำหรับเอฟเฟคพิเศษ
+        self.neon_pink = "#FF00FF" # สีสำหรับการแจ้งเตือน
         self.text_white = "#E2E8F0"
         
         self.root.configure(bg=self.bg_dark)
@@ -202,19 +204,31 @@ class UltimateCyborgTool:
         os.environ["AI_PROVIDER"] = "tgpt"
         os.environ["TGPT_PROVIDER"] = tgpt_provider
         
-        # Use local tgpt binary
-        tgpt_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "tgpt")
-        
+        # Use system tgpt (check if available)
+        import platform
         import subprocess
+        
+        # Check if we're on Windows and provide appropriate guidance
+        if platform.system() == "Windows":
+            self.log_text.insert(tk.END, f">> INFO: Checking for TGPT installation...\n")
+        
         try:
-            subprocess.run([tgpt_path, "--version"], capture_output=True, timeout=5)
-            self.log_text.insert(tk.END, f">> TGPT READY!\n")
+            # Try to use system tgpt (will work if installed via package manager or installer)
+            result = subprocess.run(["tgpt", "--version"], capture_output=True, text=True, timeout=5, encoding='utf-8', errors='replace')
+            self.log_text.insert(tk.END, f">> TGPT READY! (using system installation)\n")
             return
         except FileNotFoundError:
-            self.log_text.insert(tk.END, f">> TGPT NOT FOUND!\n")
+            self.log_text.insert(tk.END, f">> TGPT NOT FOUND! Please install TGPT first:\n")
+            self.log_text.insert(tk.END, f">>   Windows: Use installer from https://github.com/aandrew-me/tgpt\n")
+            self.log_text.insert(tk.END, f">>   Or use alternative providers: OpenAI, Google, Ollama, etc.\n")
+            self.log_text.insert(tk.END, f">>   After installing TGPT, restart the application.\n")
             return
         except Exception as e:
-            self.log_text.insert(tk.END, f">> ERROR: {str(e)}\n")
+            # Handle any other errors
+            if "WinError 193" in str(e) or "%1 is not a valid Win32 application" in str(e):
+                self.log_text.insert(tk.END, f">> ERROR: TGPT compatibility issue. Please reinstall TGPT for Windows.\n")
+            else:
+                self.log_text.insert(tk.END, f">> ERROR: {str(e)}\n")
             return
         
     def save_bug_report(self):
@@ -661,20 +675,35 @@ class UltimateCyborgTool:
                     self.log_text.insert(tk.END, f">> ERROR: {res.text[:300]}")
                     
             elif provider == "tgpt":
+                # Check if we're on Windows and provide appropriate guidance
+                import platform
                 import subprocess
-                tgpt_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "tgpt")
+                
+                if platform.system() == "Windows":
+                    self.log_text.insert(tk.END, f">> INFO: Checking for TGPT installation...\n")
+                
                 tgpt_provider = os.environ.get("TGPT_PROVIDER", "sky")
                 full_prompt = f"{system_prompt}\n\n{prompt}"
                 try:
+                    # Try to use system tgpt (will work if installed via package manager or installer)
                     result = subprocess.run(
-                        [tgpt_path, "-q", "--provider", tgpt_provider, full_prompt],
-                        capture_output=True, text=True, timeout=60
+                        ["tgpt", "-q", "--provider", tgpt_provider, full_prompt],
+                        capture_output=True, text=True, timeout=60, encoding='utf-8', errors='replace'
                     )
                     self.log_text.insert(tk.END, result.stdout)
+                except FileNotFoundError:
+                    self.log_text.insert(tk.END, f">> TGPT NOT FOUND! Please install TGPT first:\n")
+                    self.log_text.insert(tk.END, f">>   Windows: Use installer from https://github.com/aandrew-me/tgpt\n")
+                    self.log_text.insert(tk.END, f">>   Or use alternative providers: OpenAI, Google, Ollama, etc.\n")
+                    self.log_text.insert(tk.END, f">>   After installing TGPT, restart the application.")
                 except subprocess.TimeoutExpired:
                     self.log_text.insert(tk.END, f">> ERROR: TIMEOUT")
                 except Exception as e:
-                    self.log_text.insert(tk.END, f">> ERROR: {str(e)}")
+                    # Handle any other errors
+                    if "WinError 193" in str(e) or "%1 is not a valid Win32 application" in str(e):
+                        self.log_text.insert(tk.END, f">> ERROR: TGPT compatibility issue. Please reinstall TGPT for Windows.")
+                    else:
+                        self.log_text.insert(tk.END, f">> ERROR: {str(e)}")
                     
         except Exception as e:
             self.log_text.insert(tk.END, f">> ERROR: {str(e)}")

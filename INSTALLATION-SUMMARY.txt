@@ -1,0 +1,91 @@
+CYBORG NEXUS v3.5 - สรุปไฟล์การติดตั้ง
+================================================
+
+ไฟล์ที่อัปเดต:
+--------------
+1. README.md - เอกสารประกอบที่ครอบคลุมพร้อมคำแนะนำการติดตามแพลตฟอร์ม
+2. main.py - แก้ไขปัญหาความเข้ากันได้ของ TGPT สำหรับ Windows
+
+ไฟล์การติดตั้งใหม่:
+--------------------
+Windows:
+- install-windows.bat - ตัวติดตั้ง Windows อัตโนมัติพร้อมการตรวจสอบการพึ่งพา
+- launch.bat - สคริปต์เรียกใช้งานง่าย
+
+Linux/macOS:
+- install-linux.sh - ตัวติดตั้งอัตโนมัติสำหรับ Linux และ macOS
+
+เครื่องมืออำนวยความสะดวก:
+- test-installation.py - สคริปต์ตรวจสอบการติดตั้ง
+- INSTALLATION-SUMMARY.txt - ไฟล์นี้
+
+การรองรับแพลตฟอร์ม:
+----------------
+✅ Windows 10/11 (Python 3.8+)
+✅ Linux (Ubuntu/Debian, Fedora/CentOS/RHEL, เป็นต้น)
+✅ macOS (ด้วย Homebrew)
+
+วิธีการติดตั้ง:
+----------------
+1. **การติดตั้งอัตโนมัติ (แนะนำ)**:
+   - Windows: ดับเบิลคลิกที่ install-windows.bat
+   - Linux/macOS: chmod +x install-linux.sh && ./install-linux.sh
+
+2. **การติดตั้งด้วยตนเอง**:
+   - ติดตั้ง Python 3.8+
+   - ติดตั้ง TGPT (ดูคำแนะนำเฉพาะแพลตฟอร์มด้านล่าง)
+   - pip install -r requirements.txt
+   - python main.py
+
+คำแนะนำการติดตั้ง TGPT:
+------------------------
+Windows:
+  1. ดาวน์โหลดจาก: https://github.com/aandrew-me/tgpt/releases
+  2. รับรุ่น Windows ล่าสุด (tgpt-*-windows-amd64.zip)
+  3. แตกไฟล์และเพิ่ม tgpt.exe เข้าไปใน PATH
+  4. ตรวจสอบ: tgpt --version
+
+Linux (Ubuntu/Debian):
+  curl -sSf https://raw.githubusercontent.com/aandrew-me/tgpt/master/install.sh | sh
+
+Linux (Fedora):
+  sudo dnf copr enable atim/tgpt && sudo dnf install tgpt
+
+macOS:
+  brew install tgpt
+
+ทางเลือกผู้ให้บริการ AI:
+------------------------
+หากคุณไม่ต้องการติดตั้ง TGPT คุณสามารถใช้:
+- OpenAI (ต้องมี OPENAI_API_KEY ในไฟล์ .env)
+- Google/Gemini (ต้องมี GEMINI_API_KEY ในไฟล์ .env)
+- Ollama (การติดตั้งในเครื่อง ไม่ต้องการคีย์ API)
+- Anthropic (ต้องมี ANTHROPIC_API_KEY ในไฟล์ .env)
+- Groq (ต้องการคีย์ API)
+- DeepSeek (ต้องการคีย์ API)
+
+การแก้ไขปัญหา:
+---------------
+[WinError 193] %1 ไม่ใช่แอปพลิเคชัน Win32 ที่ถูกต้อง:
+  → ติดตั้งเวอร์ชัน Windows ของ TGPT จาก GitHub releases
+
+ไม่พบ TGPT:
+  → ติดตั้ง TGPT โดยใช้วิธีเฉพาะแพลตฟอร์มด้านบน
+  → หรือใช้ผู้ให้บริการ AI ทางเลือก
+
+ข้อผิดพลาดคีย์ API:
+  → สร้างไฟล์ .env พร้อมคีย์ที่จำเป็น:
+    OPENAI_API_KEY=your_key_here
+    GEMINI_API_KEY=your_key_here
+
+การพึ่งพาหายไป:
+  → pip install --upgrade -r requirements.txt
+
+ตำแหน่งไฟล์ผลลัพธ์:
+-----------------
+ไฟล์ที่สร้างทั้งหมดบันทึกใน: generated_outputs/
+- ข้อความ: ไฟล์ .txt
+- ภาพ: ไฟล์ .png
+- ม็อคอัพ UI: ไฟล์ .png
+
+สำหรับคำแนะนำการใช้งานโดยละเอียด ดูที่ README.md
