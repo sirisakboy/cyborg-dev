@@ -1,0 +1,69 @@
+คำสั่งติดตั้ง Flutter สำหรับหลายแพลตฟอร์ม (ภาษาไทย)
+
+==================================================
+🚀 สคริปต์ติดตั้ง Flutter และ Android SDK
+==================================================
+
+📥 ดาวน์โหลดสคริปต์ทั้งหมด:
+wget https://raw.githubusercontent.com/your-repo/cyborg-dev/main/install_flutter_*.sh
+wget https://raw.githubusercontent.com/your-repo/cyborg-dev/main/FLUTTER_INSTALLATION_GUIDE.md
+wget https://raw.githubusercontent.com/your-repo/cyborg-dev/main/CUBE_FLUTTER_INSTALLATION_GUIDE_TH.md
+
+🔧 ให้สิทธิ์การรันสคริปต์:
+chmod +x install_flutter_*.sh
+
+==================================================
+💻 คำสั่งติดตามระบบปฏิบัติการ
+==================================================
+
+🐧 Ubuntu / Debian / Kali Linux:
+./install_flutter_ubuntu.sh
+
+🎩 Fedora / RHEL / CentOS:
+./install_flutter_fedora.sh
+
+📱 Termux (บน Android):
+./install_flutter_termux.sh
+
+🔄 สคริปต์หลายแพลตฟอร์ม (ตรวจจับ OS อัตโนมัติ):
+./install_flutter_multiplatform.sh
+
+==================================================
+🪟 Windows
+==================================================
+ดูคำแนะนำโดยละเอียดใน: install_flutter_windows.md
+แนะนำให้ใช้ WSL2 เพื่อประสบการณ์ที่ดีที่สุด:
+1. เปิด PowerShell ในฐานะผู้ดูแลระบบ
+2. รัน: wsl --install -d Ubuntu
+3. เปิด Ubuntu และรันสคริปต์ Ubuntu ด้านบน
+
+==================================================
+✅ หลังการติดตั้ง
+==================================================
+source ~/.bashrc
+flutter doctor
+flutter create แอปของคุณ
+cd แอปของคุณ
+flutter run
+
+==================================================
+🔍 การแก้ไขปัญหาพื้นฐาน
+==================================================
+flutter doctor -v          # ดูรายละเอียดการติดตั้ง
+flutter doctor --android-licenses  # ยอมรับใบอนุญาต Android
+flutter upgrade            # อัปเดต Flutter เป็นเวอร์ชันล่าสุด
+
+==================================================
+📁 ที่ติดตั้งไฟล์
+==================================================
+~/android/sdk/         # Android SDK
+~/development/flutter/ # Flutter SDK
+~/.bashrc              # การตั้งค่าสภาพแวดล้อม
+
+==================================================
+💡 เคล็ดลับ
+==================================================
+- สำหรับประสบการณ์ที่ดีที่สุดบน Windows: ใช้ WSL2
+- หลังติดตั้งเสมอให้รัน: source ~/.bashrc
+- เชื่อมต่ออุปกรณ์จริงหรือเริ่ม emulator ก่อนรัน flutter run
+- เก็บสคริปต์ไว้สำหรับการติดตั้งบนเครื่องอื่นในอนาคต
