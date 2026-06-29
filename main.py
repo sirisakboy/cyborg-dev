@@ -157,8 +157,10 @@ class UltimateCyborgTool:
         import subprocess
         try:
             subprocess.run(["xdg-open", self.output_dir])
-        except:
+        except Exception as e:
             messagebox.showinfo("INFO", f"Output folder: {self.output_dir}")
+            # Log the error for debugging purposes
+            print(f"DEBUG: Failed to open output folder: {e}")
 
     def clean_output(self):
         """Clear output log"""

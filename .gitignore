@@ -7,3 +7,4 @@ generated_outputs/*.jpg
 .env
 *.log
 .DS_Store
+.fsc/
