@@ -237,15 +237,17 @@ class UltimateCyborgTool:
                 "SAVED",
                 f"บันทึกสำเร็จ!\nไฟล์: {filename}"
             )
-            original_text = self.save_bug_btn.cget("text")
-            self.save_bug_btn.configure(
-                text="✅ REPORT SAVED!", fg=self.neon_green
+            # อัปเดตข้อความปุ่มบันทึก
+            original_text = self.save_btn.cget("text")
+            self.save_btn.configure(
+                text="✅ SAVED!", fg=self.neon_green
             )
-            self.root.after(2000, lambda: self.save_bug_btn.configure(
+            self.root.after(2000, lambda: self.save_btn.configure(
                 text=original_text, fg=self.neon_yellow
             ))
         except Exception as e:
-            messagebox.showerror("ERROR", f"บันทึกไฟล์ล้มเหลว: {str(e)}")
+            # แสดงข้อความ error ที่เป็นมิตรต่อผู้ใช้
+            messagebox.showerror("ERROR", "บันทึกไฟล์ล้มเหลว\nกรุณาลองใหม่อีกครั้ง หรือติดต่อผู้ดูแลระบบ")
 
     def save_output(self):
         """บันทึกผลลัพธ์ตามโหมดปัจจุบัน"""
