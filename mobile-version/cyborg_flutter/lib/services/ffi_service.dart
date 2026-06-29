@@ -37,16 +37,24 @@ class FfiService {
     } else if (Platform.isMacOS) {
       _lib = ffi.DynamicLibrary.open('libcyborg.dylib');
     } else {
-      throw UnsupportedError('Unsupported platform');
+      // For web and other unsupported platforms, don't load the library
+      _isLoaded = false;
+      return;
     }
 
-    _executeCommand = _lib
-        .lookup<ffi.NativeFunction<ExecuteCommandC>>('ExecuteCommand')
-        .asFunction<ExecuteCommandDart>();
+    try {
+      _executeCommand = _lib
+          .lookup<ffi.NativeFunction<ExecuteCommandC>>('ExecuteCommand')
+          .asFunction<ExecuteCommandDart>();
 
-    _freeString = _lib
-        .lookup<ffi.NativeFunction<FreeStringC>>('FreeString')
-        .asFunction<FreeStringDart>();
+      _freeString = _lib
+          .lookup<ffi.NativeFunction<FreeStringC>>('FreeString')
+          .asFunction<FreeStringDart>();
+      _isLoaded = true;
+    } catch (e) {
+      _isLoaded = false;
+      debugPrint('FFI Library load failed: $e');
+    }
   }
 
   String executeCommand(String command) {
