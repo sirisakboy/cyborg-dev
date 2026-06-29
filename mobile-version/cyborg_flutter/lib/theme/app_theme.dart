@@ -17,8 +17,7 @@ class CyborgTheme {
       colorScheme: const ColorScheme.dark(
         primary: neonBlue,
         secondary: neonBlue,
-        surface: bgPanel,
-        background: bgDark,
+        surface: bgDark,
       ),
       textTheme: const TextTheme(
         bodyMedium: TextStyle(color: textWhite, fontFamily: 'Courier New'),
