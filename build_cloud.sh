@@ -42,9 +42,10 @@ fi
 # 3. Copy Go Lib to Flutter Project
 echo -e "
 ${GREEN}[3/3] Deploying Go Library to Flutter...${NC}"
-# Copying libcyborg.so to a place where Flutter can load it (for Linux build)
-mkdir -p android/app/src/main/jniLibs/arm64-v8a
-cp mobile-version/tgpt-main/libcyborg.so android/app/src/main/jniLibs/arm64-v8a/
+# Correct path: mobile-version/cyborg_flutter/android/app/src/main/jniLibs/arm64-v8a
+DEST_DIR="mobile-version/cyborg_flutter/android/app/src/main/jniLibs/arm64-v8a"
+mkdir -p "$DEST_DIR"
+cp mobile-version/tgpt-main/libcyborg.so "$DEST_DIR/"
 if [ $? -eq 0 ]; then
     echo -e "${GREEN}✓ Go library deployed to Flutter project.${NC}"
 else
