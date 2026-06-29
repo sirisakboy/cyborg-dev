@@ -1,31 +1,32 @@
 #!/bin/bash
 
-# Cyborg Nexus Environment Bootstrap Script
-# This script installs Flutter SDK on GitHub Codespaces / Ubuntu Linux
+# Cyborg Nexus Ultra-Fast Flutter Setup
+# Optimized for GitHub Codespaces / Linux Cloud
 
-echo "🚀 Starting Environment Setup..."
+echo "⚡ FAST-TRACKING FLUTTER SETUP..."
 
-# 1. Install dependencies for Flutter
-sudo apt-get update
-sudo apt-get install -y curl git unzip xz-utils zip libglu1-mesa -y
+# 1. Install minimal essential dependencies
+sudo apt-get update -y && sudo apt-get install -y curl git unzip xz-utils zip libglu1-mesa
 
-# 2. Download Flutter SDK (Stable channel)
-# Using a mirror or official source
-FLUTTER_VERSION="3.22.0" # You can update this to the latest
-FLUTTER_STORAGE_BASE_URL="https://storage.googleapis.com/flutter_infra_release/releases/stable"
-FLUTTER_SAMPLED_VERSION="3.22.0"
+# 2. Ultra-fast Shallow Clone (only latest commit)
+echo "📦 Downloading Flutter (Shallow Clone)..."
+if [ ! -d "$HOME/flutter" ]; then
+    git clone --depth 1 -b stable https://github.com/flutter/flutter.git ~/flutter
+else
+    echo "Flutter already exists, skipping download."
+fi
 
-echo "📦 Downloading Flutter SDK..."
-git clone https://github.com/flutter/flutter.git -b stable ~/flutter
-
-# 3. Add Flutter to PATH (current session and permanent)
-echo 'export PATH="$PATH:$HOME/flutter/bin"' >> ~/.bashrc
+# 3. Instant PATH Update
 export PATH="$PATH:$HOME/flutter/bin"
+echo 'export PATH="$PATH:$HOME/flutter/bin"' >> ~/.bashrc
 
-# 4. Pre-download Flutter artifacts
-echo "⚙️ Configuring Flutter..."
-flutter doctor
+# 4. Optimized Artifact Download
+echo "⚙️ Pre-caching binaries for current platform..."
+flutter precache
 
-echo "✅ Flutter installed successfully!"
-echo "⚠️ Please run 'source ~/.bashrc' to apply PATH changes to your current terminal."
-echo "👉 Now you can run './build_cloud.sh' again."
+# 5. Final Health Check
+flutter doctor -v | grep "Flutter"
+
+echo -e "
+✅ SETUP COMPLETE!"
+echo -e "👉 Now run: source ~/.bashrc && ./build_cloud.sh"
