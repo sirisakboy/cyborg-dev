@@ -9,9 +9,16 @@ import base64
 from datetime import datetime
 from PIL import Image, ImageTk
 from dotenv import load_dotenv
+import shutil
+
+# Get the base path for PyInstaller bundled app
+if getattr(sys, 'frozen', False):
+    BASE_PATH = sys._MEIPASS
+else:
+    BASE_PATH = os.path.dirname(os.path.abspath(__file__))
 
 # Load environment variables from .env file
-load_dotenv(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env"))
+load_dotenv(os.path.join(BASE_PATH, ".env"))
 
 try:
     from tkinterdnd2 import DND_FILES, TkinterDnD
@@ -43,9 +50,16 @@ class UltimateCyborgTool:
         
         self.root.configure(bg=self.bg_dark)
         self.image_path = None
-        self.output_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "generated_outputs")
-        if not os.path.exists(self.output_dir):
-            os.makedirs(self.output_dir)
+        # Use writable location for generated outputs
+        if getattr(sys, 'frozen', False):
+            # When bundled, use user's Documents folder
+            output_dir = os.path.join(os.path.expanduser("~"), "Documents", "CYBORG_NEXUS")
+        else:
+            output_dir = os.path.join(BASE_PATH, "generated_outputs")
+
+        if not os.path.exists(output_dir):
+            os.makedirs(output_dir)
+        self.output_dir = output_dir
 
         # --- [0. HEADER - TOP] ---
         header_frame = tk.Frame(root, bg=self.bg_dark, pady=5, padx=15)
@@ -745,7 +759,7 @@ class UltimateCyborgTool:
                 self.log_text.insert(tk.END, f">> GENERATING IMAGE WITH TGPT...")
                 self.root.update_idletasks()
                 import subprocess
-                tgpt_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "tgpt")
+                tgpt_path = os.path.join(BASE_PATH, "tgpt")
                 filepath = os.path.join(self.output_dir, f"art_{random.randint(100, 999)}.png")
                 try:
                     subprocess.run(
