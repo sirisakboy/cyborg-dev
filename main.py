@@ -522,6 +522,24 @@ class UltimateCyborgTool:
             # แสดงข้อความ error ที่เป็นมิตรต่อผู้ใช้
             messagebox.showerror("ERROR", "บันทึกไฟล์ล้มเหลว\nกรุณาลองใหม่อีกครั้ง หรือติดต่อผู้ดูแลระบบ")
 
+    def sync_to_cloud(self, filepath, mode):
+        """ซิงค์ไฟล์ผลลัพธ์ไปยัง Cloud Webhook"""
+        webhook = os.environ.get("WEBHOOK_URL", "")
+        cloud_sync = os.environ.get("CLOUD_SYNC", "false").lower() == "true"
+        
+        if not webhook or not cloud_sync:
+            return
+        
+        try:
+            with open(filepath, "rb") as f:
+                files = {"file": (os.path.basename(filepath), f, "text/plain")}
+                data = {"mode": mode, "timestamp": datetime.now().isoformat()}
+                requests.post(webhook, files=files, data=data, timeout=10)
+            self.log_text.insert(tk.END, "\n>> CLOUD SYNC: Completed\n")
+        except Exception as e:
+            err_msg = str(e)[:50]
+            self.log_text.insert(tk.END, f"\n>> CLOUD SYNC: Failed ({err_msg})\n")
+
     def save_output(self):
         """บันทึกผลลัพธ์ตามโหมดปัจจุบัน"""
         mode = self.current_mode.get()
