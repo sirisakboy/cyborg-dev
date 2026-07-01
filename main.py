@@ -29,10 +29,13 @@ except ImportError:
 class UltimateCyborgTool:
     def __init__(self, root):
         self.root = root
-        self.root.title("CYBORG NEXUS v3.5")
-        self.root.geometry("420x650") 
+        self.root.title("CYBORG NEXUS v3.6")
+        self.root.geometry("460x720") 
         self.root.resizable(False, False)
         self.root.attributes('-topmost', True) # ตรึงบนสุดหน้าจอเสมอ
+        
+        # Terminal visibility state
+        self.terminal_visible = True
         
         # 📁 โฟลเดอร์เริ่มต้นสำหรับอัปโหลดภาพ
         self.default_image_dir = "/home/boy/รูปภาพ/"
@@ -111,6 +114,12 @@ class UltimateCyborgTool:
                                font=("Courier New", 9, "bold"), bg="#2A1F3D", 
                                fg=self.neon_green, relief=tk.FLAT, bd=1)
         self.import_btn.pack(side=tk.LEFT, padx=1, fill=tk.X, expand=True)
+        
+        # Terminal toggle button
+        self.term_btn = tk.Button(btn_frame, text="💻", command=self.toggle_terminal,
+                                font=("Courier New", 9, "bold"), bg="#1A2030", 
+                                fg=self.neon_green, relief=tk.FLAT, bd=1)
+        self.term_btn.pack(side=tk.LEFT, padx=1, fill=tk.X, expand=True)
 
         # Create remaining UI
         # Create remaining UI
@@ -336,20 +345,70 @@ class UltimateCyborgTool:
             messagebox.showerror("ERROR", f"บันทึกล้มเหลว: {str(e)}")
 
     def import_document(self):
-        """นำเข้าไฟล์เอกสารเพื่อวิเคราะห์โค้ด/UI"""
+        """นำเข้าไฟล์เอกสารเพื่อวิเคราะห์โค้ด/UI - ไม่จำกัดความยาว"""
         file_path = filedialog.askopenfilename(
-            filetypes=[("Document Files", "*.txt *.md *.py *.js *.html *.css *.json *.xml *.yaml *.yml")]
+            filetypes=[("Document Files", "*.txt *.md *.py *.js *.ts *.tsx *.jsx *.html *.css *.scss *.json *.xml *.yaml *.yml *.cpp *.c *.h *.hpp *.java *.cs *.go *.rs *.rb *.php *.swift *.kt *.scala *.sql *.sh *.bat *.ps1")]
         )
         if file_path:
             try:
                 with open(file_path, "r", encoding="utf-8") as f:
                     content = f.read()
-                # ใส่เนื้อหาลงใน cmd_entry
+                # ใส่เนื้อหาลงใน cmd_entry - ไม่จำกัดความยาว
                 self.cmd_entry.delete("1.0", tk.END)
                 self.cmd_entry.insert("1.0", f"# File: {os.path.basename(file_path)}\n\n{content}")
-                messagebox.showinfo("SUCCESS", f"โหลดไฟล์สำเร็จ!\n{os.path.basename(file_path)}")
+                self.log_terminal(f"Loaded: {os.path.basename(file_path)} ({len(content)} chars)")
+                messagebox.showinfo("SUCCESS", f"โหลดไฟล์สำเร็จ!\n{os.path.basename(file_path)}\nขนาด: {len(content)} ตัวอักษร")
             except Exception as e:
                 messagebox.showerror("ERROR", f"ไม่สามารถอ่านไฟล์: {str(e)}")
+
+    def do_code_review(self):
+        """เลือกโฟลเดอร์โปรเจ็กต์เพื่อรีวิวโค้ดทั้งหมด"""
+        folder_path = filedialog.askdirectory(title="เลือกโฟลเดอร์โปรเจ็กต์")
+        if not folder_path:
+            return
+        
+        # ประเมินขนาดโฟลเดอร์
+        total_size = 0
+        file_count = 0
+        code_files = []
+        
+        supported_exts = ['.py', '.js', '.ts', '.jsx', '.tsx', '.html', '.css', '.scss', 
+                          '.java', '.cpp', '.c', '.h', '.hpp', '.cs', '.go', '.rs', '.rb', '.php',
+                          '.swift', '.kt', '.scala', '.sql', '.sh', '.bat', '.ps1', '.json', '.xml', '.yaml', '.yml', '.md', '.txt']
+        
+        for root_dir, dirs, files in os.walk(folder_path):
+            # ข้ามโฟลเดอร์ .git และ node_modules
+            dirs[:] = [d for d in dirs if d not in ['.git', 'node_modules', '__pycache__', 'venv', '.venv', 'dist', 'build']]
+            for file in files:
+                ext = os.path.splitext(file)[1].lower()
+                if ext in supported_exts:
+                    file_path = os.path.join(root_dir, file)
+                    try:
+                        size = os.path.getsize(file_path)
+                        total_size += size
+                        if total_size < 50000:  # จำกัดที่ 50KB ต่อครั้ง
+                            with open(file_path, 'r', encoding='utf-8', errors='ignore') as f:
+                                content = f.read()
+                            code_files.append(f"// {os.path.relpath(file_path, folder_path)}\n{content}")
+                            file_count += 1
+                    except Exception:
+                        continue
+        
+        if not code_files:
+            messagebox.showwarning("WARNING", "ไม่พบไฟล์โค้ดในโฟลเดอร์นี้!")
+            return
+        
+        # สร้าง prompt สำหรับรีวิว
+        all_code = "\n\n".join(code_files[:20])  # ส่งไฟล์ 20 ไฟล์แรก
+        prompt = f"ทำการ Code Review ให้โค้ดจากโฟลเดอร์:\n{os.path.basename(folder_path)}\n\nไฟล์ที่รีวิว: {file_count} ไฟล์\n\nโค้ด:\n{all_code}"
+        
+        self.log_text.pack_forget()
+        self.log_text.delete(1.0, tk.END)
+        self.log_text.pack(fill=tk.BOTH, expand=True)
+        
+        self.call_worker_api(prompt, is_design=False)
+        
+        messagebox.showinfo("CODE_REVIEW", f"กำลังรีวิว {file_count} ไฟล์จากโฟลเดอร์\n{os.path.basename(folder_path)}")
 
     def create_ui_rest(self):
         input_frame = tk.LabelFrame(root, text=" [ ENTER_COMMAND_PROMPT ] ", font=("Courier New", 9, "bold"),
@@ -369,7 +428,8 @@ class UltimateCyborgTool:
         modes = [
             ("🎨 UI_DESIGN", "UI_DESIGN"), 
             ("💻 CODE", "CODE"), 
-            ("🔍 BUG_SCAN", "BUG_SCAN"), # 🆕 เพิ่มฟังก์ชันวิเคราะห์ภาพหาบั๊ก
+            ("🔍 BUG_SCAN", "BUG_SCAN"),
+            ("📂 CODE_REVIEW", "CODE_REVIEW"),  # 🆕 รีวิวโค้ดโปรเจ็กต์ทั้งหมด
             ("🖼️ IMAGE", "IMAGE")
         ]
         for text, mode_val in modes:
@@ -396,7 +456,17 @@ class UltimateCyborgTool:
 
         self.img_preview_lbl = tk.Label(self.display_frame, bg=self.bg_panel)
 
-        # --- [5. STATUS BAR] ---
+        # --- [3.5 TERMINAL OUTPUT PANEL] ---
+        self.terminal_frame = tk.LabelFrame(root, text=" [ TERMINAL LOG ] ", font=("Courier New", 9, "bold"),
+                                            fg=self.neon_green, bg=self.bg_dark, bd=1, relief=tk.SOLID)
+        self.terminal_frame.pack(fill=tk.X, padx=15, pady=2)
+        
+        self.terminal_text = tk.Text(self.terminal_frame, height=6, font=("Courier New", 9), 
+                                     bg="#000000", fg=self.neon_green, bd=0, insertbackground=self.neon_green)
+        self.terminal_text.pack(fill=tk.X, padx=5, pady=3)
+        self.terminal_text.insert(tk.END, ">> TERMINAL READY.\n>> Output will appear here...\n")
+        
+        # --- [4. STATUS BAR] ---
         self.status_bar = tk.Label(root, text="[ WAITING ]", 
                                 font=("Courier New", 8, "bold"), fg=self.neon_yellow, bg=self.bg_dark)
         self.status_bar.pack(fill=tk.X, padx=15, pady=2)
@@ -422,6 +492,22 @@ class UltimateCyborgTool:
         """Clear output log"""
         self.log_text.delete(1.0, tk.END)
         self.log_text.insert(tk.END, ">> CLEANED.\n")
+
+    def toggle_terminal(self):
+        """Toggle terminal visibility"""
+        if self.terminal_visible:
+            self.terminal_frame.pack_forget()
+            self.term_btn.configure(fg=self.neon_red)
+        else:
+            self.terminal_frame.pack(fill=tk.X, padx=15, pady=2)
+            self.term_btn.configure(fg=self.neon_green)
+        self.terminal_visible = not self.terminal_visible
+
+    def log_terminal(self, message):
+        """Log message to terminal panel"""
+        if hasattr(self, 'terminal_text') and self.terminal_text:
+            self.terminal_text.insert(tk.END, message + "\n")
+            self.terminal_text.see(tk.END)
 
     def update_sub_options(self):
         """Update sub options based on selected provider"""
@@ -650,6 +736,7 @@ class UltimateCyborgTool:
         self.log_text.pack(fill=tk.BOTH, expand=True)
         self.img_preview_lbl.pack_forget()
         self.log_text.delete(1.0, tk.END)
+        self.log_terminal(f"\n=== MODE: {mode} ===")
         
         # ตรวจจับเนื้อหาจากไฟล์ที่ถูกนำเข้า
         file_content = None
@@ -669,9 +756,9 @@ class UltimateCyborgTool:
                 return
             self.call_worker_vision_api()
         elif mode == "UI_DESIGN":
-            # หากมีเนื้อหาจากไฟล์ ให้ปรับ prompt ให้เหมาะกับการวิเคราะห์ UI
+            # หากมีเนื้อหาจากไฟล์ ให้ปรับ prompt ให้เหมาะกับการวิเคราะห์ UI - ไม่จำกัดความยาว
             if file_content:
-                prompt = f"วิเคราะห์โค้ด/UI จากไฟล์ '{file_name}' และให้ข้อเสนอแนะการออกแบบ: {file_content[:3000]}"
+                prompt = f"วิเคราะห์โค้ด/UI จากไฟล์ '{file_name}' และให้ข้อเสนอแนะการออกแบบ: {file_content}"
             elif not prompt or prompt.startswith("เช่น"):
                 messagebox.showwarning("WARNING", "กรุณากรอกคำสั่งบรีฟงานด้วย!")
                 return
@@ -679,11 +766,14 @@ class UltimateCyborgTool:
         elif mode == "CODE":
             # หากมีเนื้อหาจากไฟล์ ให้ปรับ prompt ให้เหมาะกับการวิเคราะห์โค้ด
             if file_content:
-                prompt = f"วิเคราะห์โค้ดจากไฟล์ '{file_name}' และอธิบาย/ปรับปรุง: {file_content[:3000]}"
+                prompt = f"วิเคราะห์โค้ดจากไฟล์ '{file_name}' และอธิบาย/ปรับปรุง: {file_content}"
             elif not prompt or prompt.startswith("เช่น"):
                 messagebox.showwarning("WARNING", "กรุณากรอกคำสั่งบรีฟงานด้วย!")
                 return
             self.call_worker_api(prompt, is_design=False)
+        elif mode == "CODE_REVIEW":
+            # เลือกโฟลเดอร์โปรเจ็กต์เพื่อรีวิวโค้ด
+            self.do_code_review()
         elif mode == "IMAGE":
             if not prompt or prompt.startswith("เช่น"):
                 messagebox.showwarning("WARNING", "กรุณากรอกคำสั่งบรีฟงานด้วย!")
@@ -874,6 +964,7 @@ class UltimateCyborgTool:
             return
         
         self.log_text.insert(tk.END, f">> CONNECTING TO {provider.upper()} AI...\n\n")
+        self.log_terminal(f">>> CONNECTING TO {provider.upper()} AI...")
         self.root.update_idletasks()
 
         if is_design:
