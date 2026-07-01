@@ -8,3 +8,4 @@ generated_outputs/*.jpg
 *.log
 .DS_Store
 .fsc/
+api-key.txt
