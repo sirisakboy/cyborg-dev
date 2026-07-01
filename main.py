@@ -38,12 +38,14 @@ class LoginWindow:
         # สีสำหรับดีไซน์
         self.bg_dark = "#0A0F14"
         self.bg_panel = "#101820"
+        self.entry_bg = "#1A1A2E"  # สีพื้นหลังช่องกรอกที่แตกต่างจากพื้นหลัง
         self.neon_blue = "#00F0FF"
         self.neon_green = "#39FF14"
         self.neon_purple = "#BF00FF"
         self.neon_pink = "#FF00FF"
         self.neon_red = "#FF0055"
         self.text_white = "#E2E8F0"
+        self.neon_orange = "#FF6600"  # สีสำหรับปุ่มให้มองเห็นชัด
         
         self.login_success = False
         
@@ -58,7 +60,7 @@ class LoginWindow:
         tk.Label(header, text="🔐 CYBORG NEXUS", 
                  bg=self.bg_dark, fg=self.neon_purple,
                  font=("Courier New", 24, "bold")).pack()
-        tk.Label(header, text="v3.6 - LOGIN REQUIRED", 
+        tk.Label(header, text="v3.6 - กรุณาล็อคอิน", 
                  bg=self.bg_dark, fg=self.neon_blue,
                  font=("Courier New", 12)).pack(pady=(5, 0))
         
@@ -66,48 +68,51 @@ class LoginWindow:
         form_frame = tk.Frame(self.root, bg=self.bg_panel, padx=30, pady=20)
         form_frame.pack(fill=tk.BOTH, expand=True, padx=30)
         
-        tk.Label(form_frame, text="USER ID", 
+        # User ID Label
+        tk.Label(form_frame, text="ไอดีผู้ใช้ (USER ID)", 
                  bg=self.bg_panel, fg=self.neon_green,
                  font=("Courier New", 12, "bold")).pack(anchor='w', pady=(10, 5))
         
-        self.user_id_entry = tk.Entry(form_frame, font=("Courier New", 14), width=25,
-                                    bg="#000000", fg=self.neon_blue, bd=0, relief=tk.FLAT)
-        self.user_id_entry.pack(fill=tk.X, ipady=8)
+        # User ID Entry - เพิ่มขอบและ background ที่ชัดเจน
+        user_id_frame = tk.Frame(form_frame, bg=self.entry_bg, padx=8, pady=8)
+        user_id_frame.pack(fill=tk.X)
+        self.user_id_entry = tk.Entry(user_id_frame, font=("Courier New", 14), width=22,
+                                    bg=self.entry_bg, fg=self.neon_blue, bd=0, relief=tk.FLAT)
+        self.user_id_entry.pack()
+        self.user_id_entry.insert(0, "กรอกไอดีผู้ใช้ของคุณ")
+        self.user_id_entry.config(fg="#666666")  # สีเทาอ่อนสำหรับ placeholder
+        self.user_id_entry.bind('<FocusIn>', self.clear_user_placeholder)
+        self.user_id_entry.bind('<FocusOut>', self.restore_user_placeholder)
         self.user_id_entry.focus()
         
-        # แสดงไอดีที่ได้รับอนุญาตแล้ว
-        tk.Label(form_frame, text="\nไอดีที่ได้รับอนุญาต:", 
-                 bg=self.bg_panel, fg=self.neon_pink,
-                 font=("Tahoma", 10)).pack(anchor='w')
-        tk.Label(form_frame, text="sirisakboy", 
+        # Password Label
+        tk.Label(form_frame, text="รหัสผ่าน (PASSWORD)", 
                  bg=self.bg_panel, fg=self.neon_green,
-                 font=("Courier New", 12, "bold")).pack(anchor='w')
+                 font=("Courier New", 12, "bold")).pack(anchor='w', pady=(20, 5))
         
-        # Unlock Code
-        tk.Label(form_frame, text="\nUNLOCK CODE", 
-                 bg=self.bg_panel, fg=self.neon_green,
-                 font=("Courier New", 12, "bold")).pack(anchor='w', pady=(15, 5))
+        # Password Entry - เพิ่มขอบและ background ที่ชัดเจน
+        pwd_frame = tk.Frame(form_frame, bg=self.entry_bg, padx=8, pady=8)
+        pwd_frame.pack(fill=tk.X)
+        self.unlock_code_entry = tk.Entry(pwd_frame, font=("Courier New", 14), width=22,
+                                        bg=self.entry_bg, fg=self.neon_purple, bd=0, relief=tk.FLAT, show="*")
+        self.unlock_code_entry.pack()
         
-        self.unlock_code_entry = tk.Entry(form_frame, font=("Courier New", 14), width=25,
-                                        bg="#000000", fg=self.neon_purple, bd=0, relief=tk.FLAT, show="*")
-        self.unlock_code_entry.pack(fill=tk.X, ipady=8)
+        # Show/Hide password - ใช้แค่ eye button
+        eye_btn = tk.Button(pwd_frame, text="👁️", 
+                            command=self.toggle_unlock_visibility,
+                            font=("Tahoma", 10),
+                            bg=self.entry_bg, fg=self.neon_blue,
+                            relief=tk.FLAT, bd=0, padx=5)
+        eye_btn.pack(side=tk.RIGHT)
         
-        # Show/Hide unlock code
-        self.show_unlock_var = tk.BooleanVar()
-        show_chk = tk.Checkbutton(form_frame, text="👁️ แสดงโค้ดถอนการล็อค",
-                                variable=self.show_unlock_var,
-                                command=self.toggle_unlock_visibility,
-                                bg=self.bg_panel, fg=self.neon_blue,
-                                font=("Tahoma", 9))
-        show_chk.pack(pady=10)
-        
-        # Login Button
-        self.login_btn = tk.Button(form_frame, text="🔓 UNLOCK", 
+        # Login Button - ปรับสีให้มองเห็นชัด
+        self.login_btn = tk.Button(form_frame, text="🔓 เข้าสู่ระบบ", 
                                  command=self.attempt_login,
                                  font=("Courier New", 14, "bold"),
-                                 bg="#1A2F25", fg=self.neon_green,
-                                 relief=tk.FLAT, bd=0, padx=20, pady=8)
-        self.login_btn.pack(pady=20)
+                                 bg=self.neon_orange, fg="#FFFFFF",  # สีส้มที่สว่างขึ้นพร้อมข้อความสีขาว
+                                 relief=tk.FLAT, bd=0, padx=30, pady=10,
+                                 activebackground=self.neon_green, activeforeground="#000000")
+        self.login_btn.pack(pady=25)
         
         # Status
         self.status_lbl = tk.Label(form_frame, text="", 
@@ -118,20 +123,39 @@ class LoginWindow:
         # Footer
         footer = tk.Frame(self.root, bg=self.bg_dark, pady=20)
         footer.pack(fill=tk.X)
-        tk.Label(footer, text=">> SYSTEM READY FOR AUTHORIZED USER", 
+        tk.Label(footer, text=">> ระบบพร้อมรับการเชื่อมต่อผู้ใช้ที่ได้รับอนุญาต", 
                  bg=self.bg_dark, fg=self.neon_blue,
                  font=("Courier New", 10)).pack()
+        
+        self.is_pwd_visible = False
         
         # Bind Enter key
         self.root.bind('<Return>', self.attempt_login)
     
+    def clear_user_placeholder(self, event=None):
+        """ลบ placeholder text เมื่อมีการโฟกัส"""
+        if self.user_id_entry.get() == "กรอกไอดีผู้ใช้ของคุณ":
+            self.user_id_entry.delete(0, tk.END)
+            self.user_id_entry.config(fg=self.neon_blue)
+    
+    def restore_user_placeholder(self, event=None):
+        """คืน placeholder text หากว่างเปล่า"""
+        if not self.user_id_entry.get():
+            self.user_id_entry.insert(0, "กรอกไอดีผู้ใช้ของคุณ")
+            self.user_id_entry.config(fg="#666666")
+    
     def toggle_unlock_visibility(self):
-        show = self.show_unlock_var.get()
-        self.unlock_code_entry.config(show="" if show else "*")
+        """สลับการแสดง/ซ่อน รหัสผ่าน"""
+        self.is_pwd_visible = not self.is_pwd_visible
+        show = "" if self.is_pwd_visible else "*"
+        self.unlock_code_entry.config(show=show)
     
     def attempt_login(self, event=None):
         user_id = self.user_id_entry.get().strip()
-        unlock_code = self.unlock_code_entry.get().strip()
+        
+        # ลบ placeholder ถ้ามี
+        if user_id == "กรอกไอดีผู้ใช้ของคุณ":
+            user_id = ""
         
         if user_id == "sirisakboy":
             self.login_success = True
