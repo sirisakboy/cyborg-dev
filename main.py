@@ -26,6 +26,124 @@ try:
 except ImportError:
     USE_DND = False
 
+class LoginWindow:
+    """หน้าต่างล็อคอินของ CYBORG NEXUS"""
+    def __init__(self, root):
+        self.root = root
+        self.root.title("🔐 CYBORG NEXUS - LOGIN")
+        self.root.geometry("460x500")
+        self.root.resizable(False, False)
+        self.root.configure(bg="#0A0F14")
+        
+        # สีสำหรับดีไซน์
+        self.bg_dark = "#0A0F14"
+        self.bg_panel = "#101820"
+        self.neon_blue = "#00F0FF"
+        self.neon_green = "#39FF14"
+        self.neon_purple = "#BF00FF"
+        self.neon_pink = "#FF00FF"
+        self.neon_red = "#FF0055"
+        self.text_white = "#E2E8F0"
+        
+        self.login_success = False
+        
+        # สร้าง UI หน้าล็อคอิน
+        self.create_login_ui()
+    
+    def create_login_ui(self):
+        # Header
+        header = tk.Frame(self.root, bg=self.bg_dark, pady=30)
+        header.pack(fill=tk.X)
+        
+        tk.Label(header, text="🔐 CYBORG NEXUS", 
+                 bg=self.bg_dark, fg=self.neon_purple,
+                 font=("Courier New", 24, "bold")).pack()
+        tk.Label(header, text="v3.6 - LOGIN REQUIRED", 
+                 bg=self.bg_dark, fg=self.neon_blue,
+                 font=("Courier New", 12)).pack(pady=(5, 0))
+        
+        # Login Form
+        form_frame = tk.Frame(self.root, bg=self.bg_panel, padx=30, pady=20)
+        form_frame.pack(fill=tk.BOTH, expand=True, padx=30)
+        
+        tk.Label(form_frame, text="USER ID", 
+                 bg=self.bg_panel, fg=self.neon_green,
+                 font=("Courier New", 12, "bold")).pack(anchor='w', pady=(10, 5))
+        
+        self.user_id_entry = tk.Entry(form_frame, font=("Courier New", 14), width=25,
+                                    bg="#000000", fg=self.neon_blue, bd=0, relief=tk.FLAT)
+        self.user_id_entry.pack(fill=tk.X, ipady=8)
+        self.user_id_entry.focus()
+        
+        # แสดงไอดีที่ได้รับอนุญาตแล้ว
+        tk.Label(form_frame, text="\nไอดีที่ได้รับอนุญาต:", 
+                 bg=self.bg_panel, fg=self.neon_pink,
+                 font=("Tahoma", 10)).pack(anchor='w')
+        tk.Label(form_frame, text="sirisakboy", 
+                 bg=self.bg_panel, fg=self.neon_green,
+                 font=("Courier New", 12, "bold")).pack(anchor='w')
+        
+        # Unlock Code
+        tk.Label(form_frame, text="\nUNLOCK CODE", 
+                 bg=self.bg_panel, fg=self.neon_green,
+                 font=("Courier New", 12, "bold")).pack(anchor='w', pady=(15, 5))
+        
+        self.unlock_code_entry = tk.Entry(form_frame, font=("Courier New", 14), width=25,
+                                        bg="#000000", fg=self.neon_purple, bd=0, relief=tk.FLAT, show="*")
+        self.unlock_code_entry.pack(fill=tk.X, ipady=8)
+        
+        # Show/Hide unlock code
+        self.show_unlock_var = tk.BooleanVar()
+        show_chk = tk.Checkbutton(form_frame, text="👁️ แสดงโค้ดถอนการล็อค",
+                                variable=self.show_unlock_var,
+                                command=self.toggle_unlock_visibility,
+                                bg=self.bg_panel, fg=self.neon_blue,
+                                font=("Tahoma", 9))
+        show_chk.pack(pady=10)
+        
+        # Login Button
+        self.login_btn = tk.Button(form_frame, text="🔓 UNLOCK", 
+                                 command=self.attempt_login,
+                                 font=("Courier New", 14, "bold"),
+                                 bg="#1A2F25", fg=self.neon_green,
+                                 relief=tk.FLAT, bd=0, padx=20, pady=8)
+        self.login_btn.pack(pady=20)
+        
+        # Status
+        self.status_lbl = tk.Label(form_frame, text="", 
+                                  bg=self.bg_panel, fg=self.neon_red,
+                                  font=("Courier New", 10))
+        self.status_lbl.pack()
+        
+        # Footer
+        footer = tk.Frame(self.root, bg=self.bg_dark, pady=20)
+        footer.pack(fill=tk.X)
+        tk.Label(footer, text=">> SYSTEM READY FOR AUTHORIZED USER", 
+                 bg=self.bg_dark, fg=self.neon_blue,
+                 font=("Courier New", 10)).pack()
+        
+        # Bind Enter key
+        self.root.bind('<Return>', self.attempt_login)
+    
+    def toggle_unlock_visibility(self):
+        show = self.show_unlock_var.get()
+        self.unlock_code_entry.config(show="" if show else "*")
+    
+    def attempt_login(self, event=None):
+        user_id = self.user_id_entry.get().strip()
+        unlock_code = self.unlock_code_entry.get().strip()
+        
+        if user_id == "sirisakboy":
+            self.login_success = True
+            self.status_lbl.configure(text="✅ ยินดีต้อนรับ sirisakboy!", fg=self.neon_green)
+            self.root.after(1000, self.root.destroy)
+        else:
+            self.status_lbl.configure(text="❌ ไม่ผ่านการยืนยัน! ไอดีผู้ใช้ไม่ถูกต้อง", fg=self.neon_red)
+            self.user_id_entry.delete(0, tk.END)
+            self.unlock_code_entry.delete(0, tk.END)
+            self.user_id_entry.focus()
+
+
 class UltimateCyborgTool:
     def __init__(self, root):
         self.root = root
@@ -65,7 +183,7 @@ class UltimateCyborgTool:
         self.output_dir = output_dir
 
         # --- [0. HEADER - TOP] ---
-        header_frame = tk.Frame(root, bg=self.bg_dark, pady=5, padx=15)
+        header_frame = tk.Frame(self.root, bg=self.bg_dark, pady=5, padx=15)
         header_frame.pack(fill=tk.X)
         
         # Control buttons - full width
@@ -411,7 +529,7 @@ class UltimateCyborgTool:
         messagebox.showinfo("CODE_REVIEW", f"กำลังรีวิว {file_count} ไฟล์จากโฟลเดอร์\n{os.path.basename(folder_path)}")
 
     def create_ui_rest(self):
-        input_frame = tk.LabelFrame(root, text=" [ ENTER_COMMAND_PROMPT ] ", font=("Courier New", 9, "bold"),
+        input_frame = tk.LabelFrame(self.root, text=" [ ENTER_COMMAND_PROMPT ] ", font=("Courier New", 9, "bold"),
                                     fg=self.neon_blue, bg=self.bg_dark, bd=1, relief=tk.SOLID)
         input_frame.pack(fill=tk.X, padx=15, pady=5)
         
@@ -420,7 +538,7 @@ class UltimateCyborgTool:
         self.cmd_entry.pack(fill=tk.X, padx=8, pady=8)
 
         # --- [3. MODE SELECTOR (เพิ่มตัวเลือก BUG_SCAN)] ---
-        mode_frame = tk.Frame(root, bg=self.bg_dark)
+        mode_frame = tk.Frame(self.root, bg=self.bg_dark)
         mode_frame.pack(fill=tk.X, padx=15, pady=2)
         
         self.current_mode = tk.StringVar(value="UI_DESIGN")
@@ -440,7 +558,7 @@ class UltimateCyborgTool:
             rb.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=1)
 
         # --- [4. DISPLAY & OUTPUT LOG PANEL] ---
-        self.display_frame = tk.LabelFrame(root, text=" [ OUTPUT ] ", font=("Courier New", 9, "bold"),
+        self.display_frame = tk.LabelFrame(self.root, text=" [ OUTPUT ] ", font=("Courier New", 9, "bold"),
                                            fg=self.neon_blue, bg=self.bg_dark, bd=1, relief=tk.SOLID)
         self.display_frame.pack(fill=tk.X, padx=15, pady=5)
         
@@ -457,7 +575,7 @@ class UltimateCyborgTool:
         self.img_preview_lbl = tk.Label(self.display_frame, bg=self.bg_panel)
 
         # --- [3.5 TERMINAL OUTPUT PANEL] ---
-        self.terminal_frame = tk.LabelFrame(root, text=" [ TERMINAL LOG ] ", font=("Courier New", 9, "bold"),
+        self.terminal_frame = tk.LabelFrame(self.root, text=" [ TERMINAL LOG ] ", font=("Courier New", 9, "bold"),
                                             fg=self.neon_green, bg=self.bg_dark, bd=1, relief=tk.SOLID)
         self.terminal_frame.pack(fill=tk.X, padx=15, pady=2)
         
@@ -467,13 +585,13 @@ class UltimateCyborgTool:
         self.terminal_text.insert(tk.END, ">> TERMINAL READY.\n>> Output will appear here...\n")
         
         # --- [4. STATUS BAR] ---
-        self.status_bar = tk.Label(root, text="[ WAITING ]", 
+        self.status_bar = tk.Label(self.root, text="[ WAITING ]", 
                                 font=("Courier New", 8, "bold"), fg=self.neon_yellow, bg=self.bg_dark)
         self.status_bar.pack(fill=tk.X, padx=15, pady=2)
 
         # --- [6. PROGRESS BAR] ---
         self.progress = tk.ttk.Progressbar(
-            root, orient=tk.HORIZONTAL, mode='indeterminate'
+            self.root, orient=tk.HORIZONTAL, mode='indeterminate'
         )
         self.progress.pack(fill=tk.X, padx=15, pady=(0, 5))
         self.progress.pack_forget()
@@ -1185,9 +1303,20 @@ class UltimateCyborgTool:
 
 
 if __name__ == "__main__":
+    # สร้างหน้าต่างล็อคอินก่อน
     if USE_DND:
-        root = TkinterDnD.Tk()
+        login_root = TkinterDnD.Tk()
     else:
-        root = tk.Tk()
-    app = UltimateCyborgTool(root)
-    root.mainloop()
+        login_root = tk.Tk()
+    
+    login_win = LoginWindow(login_root)
+    login_root.mainloop()
+    
+    # ถ้าล็อคอินสำเร็จ ให้เปิดหน้าหลัก
+    if login_win.login_success:
+        if USE_DND:
+            root = TkinterDnD.Tk()
+        else:
+            root = tk.Tk()
+        app = UltimateCyborgTool(root)
+        root.mainloop()
