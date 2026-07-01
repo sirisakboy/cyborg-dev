@@ -205,7 +205,10 @@ class UltimateCyborgTool:
         if not os.path.exists(output_dir):
             os.makedirs(output_dir)
         self.output_dir = output_dir
-
+        
+        # TGPT Provider (ใช้ค่าจาก environment หรือค่าดีฟอลต์)
+        self.sub_option_var = tk.StringVar(value=os.environ.get("TGPT_PROVIDER", "sky"))
+        
         # --- [0. HEADER - TOP] ---
         header_frame = tk.Frame(self.root, bg=self.bg_dark, pady=5, padx=15)
         header_frame.pack(fill=tk.X)
@@ -226,13 +229,7 @@ class UltimateCyborgTool:
                                font=("Courier New", 9, "bold"), bg="#152836", fg=self.neon_blue, relief=tk.FLAT, bd=1)
         self.copy_btn.pack(side=tk.LEFT, padx=1, fill=tk.X, expand=True)
         
-        # Tgpt provider selector
-        self.sub_option_var = tk.StringVar(value="sky")
-        self.sub_option_combo = ttk.Combobox(btn_frame, textvariable=self.sub_option_var,
-                                          font=("Tahoma", 9), width=12)
-        self.sub_option_combo["values"] = ["sky", "pollinations", "deepseek", "groq", "ollama"]
-        self.sub_option_combo.pack(side=tk.LEFT, padx=2, fill=tk.X, expand=True)
-        
+        # Exec button - removed TGPT provider selector
         self.exec_btn = tk.Button(btn_frame, text="⚡", command=self.execute_generation, 
                                 font=("Courier New", 9, "bold"), bg="#1A2F25", fg=self.neon_green, relief=tk.FLAT, bd=1)
         self.exec_btn.pack(side=tk.LEFT, padx=1, fill=tk.X, expand=True)
@@ -336,13 +333,15 @@ class UltimateCyborgTool:
                  font=("Courier New", 12, "bold")).pack(pady=10)
         
         # TGPT Provider selection
-        tk.Label(model_tab, text="TGPT Provider", bg=self.bg_dark, 
+        tk.Label(model_tab, text="ผู้ให้บริการ AI (TGPT Provider)", bg=self.bg_dark, 
                  fg=self.text_white, font=("Tahoma", 10)).pack(anchor='w', padx=20)
-        self.model_provider_var = tk.StringVar(value=self.sub_option_var.get())
+        self.model_provider_var = tk.StringVar(value=os.environ.get("TGPT_PROVIDER", "sky"))
         model_combo = ttk.Combobox(model_tab, textvariable=self.model_provider_var,
                                  font=("Tahoma", 10), width=30)
         model_combo["values"] = ["sky", "pollinations", "deepseek", "groq", "ollama"]
         model_combo.pack(pady=5, padx=20)
+        # อัปเดตค่าทันทีเมื่าเลือก
+        model_combo.bind('<<ComboboxSelected>>', lambda e: os.environ.update({"TGPT_PROVIDER": self.model_provider_var.get()}))
         
         # Ollama models
         tk.Label(model_tab, text="Ollama Models (เมื่อเลือก ollama)", 
@@ -651,36 +650,16 @@ class UltimateCyborgTool:
             self.terminal_text.insert(tk.END, message + "\n")
             self.terminal_text.see(tk.END)
 
-    def update_sub_options(self):
-        """Update sub options based on selected provider"""
-        provider = self.ai_provider.get()
-        
-        if provider == "ollama":
-            self.sub_option_combo.config(values=["llama3", "llama3.2", "mistral", "codellama", "phi3"])
-            self.sub_option_var.set("llama3")
-            self.api_key_entry.delete(0, tk.END)
-            self.api_key_entry.config(state="disabled")
-        elif provider == "tgpt":
-            self.sub_option_combo.config(values=["sky", "pollinations", "deepseek", "groq", "ollama"])
-            self.sub_option_var.set("sky")
-            self.api_key_entry.delete(0, tk.END)
-            self.api_key_entry.config(state="disabled")
-        else:
-            self.sub_option_combo.config(values=[])
-            self.sub_option_var.set("")
-            self.api_key_entry.config(state="normal")
-            saved_key = os.environ.get("OPENAI_API_KEY", "")
-            if saved_key and saved_key != "sk-your-openai-api-key-here":
-                self.api_key_entry.delete(0, tk.END)
-                self.api_key_entry.insert(0, saved_key)
-
     def do_login(self):
         """Login with Tgpt"""
         # Check if UI is ready
         if not hasattr(self, 'log_text') or not self.log_text:
             return
         
-        tgpt_provider = self.sub_option_var.get() or "sky"
+        # ใช้ค่าจาก settings หรือค่าดีฟอลต์
+        tgpt_provider = os.environ.get("TGPT_PROVIDER", "sky")
+        if not tgpt_provider:
+            tgpt_provider = "sky"
         self.log_text.insert(tk.END, f"\n>> CHECKING TGPT ({tgpt_provider})...\n")
         self.root.update_idletasks()
         os.environ["AI_PROVIDER"] = "tgpt"
