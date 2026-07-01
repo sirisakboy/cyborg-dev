@@ -26,6 +26,43 @@ try:
 except ImportError:
     USE_DND = False
 
+def configure_dark_scrollbar():
+    """กำหนดสี scrollbar ให้เข้ากับธีมมืด"""
+    style = ttk.Style()
+    style.theme_use('clam')
+    style.configure("Vertical.TScrollbar", 
+                    background="#2D2D44",
+                    troughcolor="#1A1A2E",
+                    gripcount=0)
+    style.map("Vertical.TScrollbar",
+              background=[('active', '#3A3A5C')])
+
+class ToolTip:
+    """Tooltip สำหรับอธิบายฟังก์ชันของไอคอน"""
+    def __init__(self, widget, text):
+        self.widget = widget
+        self.text = text
+        self.tooltip = None
+        widget.bind('<Enter>', self.show)
+        widget.bind('<Leave>', self.hide)
+    
+    def show(self, event=None):
+        x, y, _, _ = self.widget.bbox("insert")
+        x += self.widget.winfo_rootx() + 20
+        y += self.widget.winfo_rooty() + 20
+        self.tooltip = tw = tk.Toplevel(self.widget)
+        tw.wm_overrideredirect(True)
+        tw.wm_geometry(f"+{x}+{y}")
+        label = tk.Label(tw, text=self.text, bg="#FFFFE0", fg="#000000",
+                         font=("Tahoma", 9), relief=tk.SOLID, borderwidth=1, padx=5, pady=3)
+        label.pack()
+    
+    def hide(self, event=None):
+        if self.tooltip:
+            self.tooltip.destroy()
+            self.tooltip = None
+
+
 class LoginWindow:
     """หน้าต่างล็อคอินของ CYBORG NEXUS"""
     def __init__(self, root):
@@ -176,6 +213,9 @@ class UltimateCyborgTool:
         self.root.resizable(False, False)
         self.root.attributes('-topmost', True) # ตรึงบนสุดหน้าจอเสมอ
         
+        # Configure dark theme for scrollbar
+        configure_dark_scrollbar()
+        
         # Terminal visibility state
         self.terminal_visible = True
         
@@ -220,45 +260,54 @@ class UltimateCyborgTool:
         self.upload_btn = tk.Button(btn_frame, text="📥", command=self.upload_image,
                                  font=("Courier New", 9, "bold"), bg="#1A242F", fg=self.neon_blue, relief=tk.FLAT, bd=1)
         self.upload_btn.pack(side=tk.LEFT, padx=1, fill=tk.X, expand=True)
+        ToolTip(self.upload_btn, "อัปโหลดภาพ")
         
         self.save_btn = tk.Button(btn_frame, text="💾", command=self.save_bug_report,
                               font=("Courier New", 9, "bold"), bg="#2A1F3D", fg=self.neon_yellow, relief=tk.FLAT, bd=1)
         self.save_btn.pack(side=tk.LEFT, padx=1, fill=tk.X, expand=True)
+        ToolTip(self.save_btn, "บันทึกผลลัพธ์")
         
         self.copy_btn = tk.Button(btn_frame, text="📋", command=self.copy_to_clipboard,
                                font=("Courier New", 9, "bold"), bg="#152836", fg=self.neon_blue, relief=tk.FLAT, bd=1)
         self.copy_btn.pack(side=tk.LEFT, padx=1, fill=tk.X, expand=True)
+        ToolTip(self.copy_btn, "คัดลอกไปยังคลิปบอร์ด")
         
-        # Exec button - removed TGPT provider selector
+        # Exec button
         self.exec_btn = tk.Button(btn_frame, text="⚡", command=self.execute_generation, 
                                 font=("Courier New", 9, "bold"), bg="#1A2F25", fg=self.neon_green, relief=tk.FLAT, bd=1)
         self.exec_btn.pack(side=tk.LEFT, padx=1, fill=tk.X, expand=True)
+        ToolTip(self.exec_btn, "เรียกทำงาน")
         
         self.clean_btn = tk.Button(btn_frame, text="🧹", command=self.clean_output,
                                 font=("Courier New", 9, "bold"), bg="#1A2030", fg=self.neon_red, relief=tk.FLAT, bd=1)
         self.clean_btn.pack(side=tk.LEFT, padx=1, fill=tk.X, expand=True)
+        ToolTip(self.clean_btn, "ล้างผลลัพธ์")
         
         self.open_folder_btn = tk.Button(btn_frame, text="📤", command=self.open_output_folder,
                                font=("Courier New", 9, "bold"), bg="#1A2435", fg=self.neon_blue, relief=tk.FLAT, bd=1)
         self.open_folder_btn.pack(side=tk.LEFT, padx=1, fill=tk.X, expand=True)
+        ToolTip(self.open_folder_btn, "เปิดโฟลเดอร์ผลลัพธ์")
         
-        # Settings button for API Key configuration
+        # Settings button
         self.settings_btn = tk.Button(btn_frame, text="⚙️", command=self.open_settings,
                                font=("Courier New", 9, "bold"), bg="#2A1F3D", 
                                fg=self.neon_purple, relief=tk.FLAT, bd=1)
         self.settings_btn.pack(side=tk.LEFT, padx=1, fill=tk.X, expand=True)
+        ToolTip(self.settings_btn, "ตั้งค่า")
         
-        # Import document button for CODE/UI_DESIGN modes
+        # Import document button
         self.import_btn = tk.Button(btn_frame, text="📄", command=self.import_document,
                                font=("Courier New", 9, "bold"), bg="#2A1F3D", 
                                fg=self.neon_green, relief=tk.FLAT, bd=1)
         self.import_btn.pack(side=tk.LEFT, padx=1, fill=tk.X, expand=True)
+        ToolTip(self.import_btn, "นำเข้าเอกสาร")
         
         # Terminal toggle button
         self.term_btn = tk.Button(btn_frame, text="💻", command=self.toggle_terminal,
                                 font=("Courier New", 9, "bold"), bg="#1A2030", 
                                 fg=self.neon_green, relief=tk.FLAT, bd=1)
         self.term_btn.pack(side=tk.LEFT, padx=1, fill=tk.X, expand=True)
+        ToolTip(self.term_btn, "แสดง/ซ่อนเทอร์มินัล")
 
         # Create remaining UI
         # Create remaining UI
@@ -552,13 +601,15 @@ class UltimateCyborgTool:
         messagebox.showinfo("CODE_REVIEW", f"กำลังรีวิว {file_count} ไฟล์จากโฟลเดอร์\n{os.path.basename(folder_path)}")
 
     def create_ui_rest(self):
-        input_frame = tk.LabelFrame(self.root, text=" [ ENTER_COMMAND_PROMPT ] ", font=("Courier New", 9, "bold"),
+        input_frame = tk.LabelFrame(self.root, text="ป้อนคำสั่ง", font=("Courier New", 9, "bold"),
                                     fg=self.neon_blue, bg=self.bg_dark, bd=1, relief=tk.SOLID)
         input_frame.pack(fill=tk.X, padx=15, pady=5)
         
         self.cmd_entry = tk.Text(input_frame, font=("Tahoma", 12), bg=self.bg_panel, fg=self.text_white, 
                                   insertbackground=self.neon_blue, bd=0, highlightthickness=1, highlightbackground="#223344", height=5, wrap=tk.WORD)
         self.cmd_entry.pack(fill=tk.X, padx=8, pady=8)
+        # เพิ่ม placeholder text
+        self.cmd_entry.insert(tk.END, "ป้อนคำสั่งที่นี่...")
 
         # --- [3. MODE SELECTOR (เพิ่มตัวเลือก BUG_SCAN)] ---
         mode_frame = tk.Frame(self.root, bg=self.bg_dark)
@@ -567,11 +618,11 @@ class UltimateCyborgTool:
         self.current_mode = tk.StringVar(value="UI_DESIGN")
         
         modes = [
-            ("🎨 UI_DESIGN", "UI_DESIGN"), 
-            ("💻 CODE", "CODE"), 
-            ("🔍 BUG_SCAN", "BUG_SCAN"),
-            ("📂 CODE_REVIEW", "CODE_REVIEW"),  # 🆕 รีวิวโค้ดโปรเจ็กต์ทั้งหมด
-            ("🖼️ IMAGE", "IMAGE")
+            ("🎨 UI Design", "UI_DESIGN"), 
+            ("💻 Code", "CODE"), 
+            ("🔍 Bug Scan", "BUG_SCAN"),
+            ("📂 Code Review", "CODE_REVIEW"),
+            ("🖼️ ภาพ", "IMAGE")
         ]
         for text, mode_val in modes:
             rb = tk.Radiobutton(mode_frame, text=text, variable=self.current_mode, value=mode_val,
@@ -581,7 +632,7 @@ class UltimateCyborgTool:
             rb.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=1)
 
         # --- [4. DISPLAY & OUTPUT LOG PANEL] ---
-        self.display_frame = tk.LabelFrame(self.root, text=" [ OUTPUT ] ", font=("Courier New", 9, "bold"),
+        self.display_frame = tk.LabelFrame(self.root, text="ผลลัพธ์", font=("Courier New", 9, "bold"),
                                            fg=self.neon_blue, bg=self.bg_dark, bd=1, relief=tk.SOLID)
         self.display_frame.pack(fill=tk.X, padx=15, pady=5)
         
@@ -598,17 +649,17 @@ class UltimateCyborgTool:
         self.img_preview_lbl = tk.Label(self.display_frame, bg=self.bg_panel)
 
         # --- [3.5 TERMINAL OUTPUT PANEL] ---
-        self.terminal_frame = tk.LabelFrame(self.root, text=" [ TERMINAL LOG ] ", font=("Courier New", 9, "bold"),
+        self.terminal_frame = tk.LabelFrame(self.root, text="เทอร์มินัล", font=("Courier New", 9, "bold"),
                                             fg=self.neon_green, bg=self.bg_dark, bd=1, relief=tk.SOLID)
         self.terminal_frame.pack(fill=tk.X, padx=15, pady=2)
         
         self.terminal_text = tk.Text(self.terminal_frame, height=6, font=("Courier New", 9), 
                                      bg="#000000", fg=self.neon_green, bd=0, insertbackground=self.neon_green)
         self.terminal_text.pack(fill=tk.X, padx=5, pady=3)
-        self.terminal_text.insert(tk.END, ">> TERMINAL READY.\n>> Output will appear here...\n")
+        self.terminal_text.insert(tk.END, ">> เทอร์มินัลพร้อมใช้งาน\n>> ผลลัพธ์จะแสดงที่นี่...\n")
         
         # --- [4. STATUS BAR] ---
-        self.status_bar = tk.Label(self.root, text="[ WAITING ]", 
+        self.status_bar = tk.Label(self.root, text="พร้อม", 
                                 font=("Courier New", 8, "bold"), fg=self.neon_yellow, bg=self.bg_dark)
         self.status_bar.pack(fill=tk.X, padx=15, pady=2)
 
