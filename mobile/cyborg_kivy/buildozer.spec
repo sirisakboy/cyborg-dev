@@ -130,3 +130,44 @@ android.logcat_filters = *:S python:D
 
 # (str) Supported architecture
 android.arch = arm64-v8a
+
+# (str) Application icon
+#icon.filename = 
+
+# (str) Application icon (for Windows platform)
+#icon.filename = 
+
+[buildozer]
+# (int) Log level (0 = error only, 1 = info, 2 = debug (with command output))
+log_level = 2
+
+# (int) Display warning if buildozer is run as root (0 = False, 1 = True)
+warn_on_root = 1
+
+# (str) Path to build artifact storage
+#build_dir = ./.buildozer
+
+# (str) Path to build output (i.e. .apk, .ipa) storage
+#bin_dir = ./bin
+
+[app:android]
+# (bool) Copy APK to the "android" directory
+#android.copy_and_remove_apk = True
+
+[app:kivy]
+# (str) Log level for Kivy
+#kivy.log_level = DEBUG
+
+[app:kivysettings]
+# (list) Primary dependencies for Kivy
+#kivy.deps = 
+
+# (list) Secondary dependencies for Kivy
+#kivy.install_internals = 
+
+# (list) Additional libraries to include
+#android.library = 
+
+[app:android.permissions]
+# (list) Android permissions
+#android.permissions = CAMERA,INTERNET,WRITE_EXTERNAL_STORAGE,READ_EXTERNAL_STORAGE
