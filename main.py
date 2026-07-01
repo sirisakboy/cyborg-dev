@@ -31,7 +31,7 @@ class LoginWindow:
     def __init__(self, root):
         self.root = root
         self.root.title("🔐 CYBORG NEXUS - LOGIN")
-        self.root.geometry("460x500")
+        self.root.geometry("315x653")
         self.root.resizable(False, False)
         self.root.configure(bg="#0A0F14")
         
@@ -54,53 +54,53 @@ class LoginWindow:
     
     def create_login_ui(self):
         # Header
-        header = tk.Frame(self.root, bg=self.bg_dark, pady=30)
+        header = tk.Frame(self.root, bg=self.bg_dark, pady=10)
         header.pack(fill=tk.X)
         
         tk.Label(header, text="🔐 CYBORG NEXUS", 
                  bg=self.bg_dark, fg=self.neon_purple,
-                 font=("Courier New", 24, "bold")).pack()
-        tk.Label(header, text="v3.6 - กรุณาล็อคอิน", 
+                 font=("Courier New", 16, "bold")).pack()
+        tk.Label(header, text="v3.6 - ล็อคอิน", 
                  bg=self.bg_dark, fg=self.neon_blue,
-                 font=("Courier New", 12)).pack(pady=(5, 0))
+                 font=("Courier New", 10)).pack(pady=(2, 0))
         
         # Login Form
-        form_frame = tk.Frame(self.root, bg=self.bg_panel, padx=30, pady=20)
-        form_frame.pack(fill=tk.BOTH, expand=True, padx=30)
+        form_frame = tk.Frame(self.root, bg=self.bg_panel, padx=15, pady=10)
+        form_frame.pack(fill=tk.BOTH, expand=True, padx=15)
         
         # User ID Label
-        tk.Label(form_frame, text="ไอดีผู้ใช้ (USER ID)", 
+        tk.Label(form_frame, text="ไอดีผู้ใช้", 
                  bg=self.bg_panel, fg=self.neon_green,
-                 font=("Courier New", 12, "bold")).pack(anchor='w', pady=(10, 5))
+                 font=("Courier New", 10, "bold")).pack(anchor='w', pady=(5, 2))
         
         # User ID Entry - เพิ่มขอบและ background ที่ชัดเจน
-        user_id_frame = tk.Frame(form_frame, bg=self.entry_bg, padx=8, pady=8)
+        user_id_frame = tk.Frame(form_frame, bg=self.entry_bg, padx=6, pady=4)
         user_id_frame.pack(fill=tk.X)
-        self.user_id_entry = tk.Entry(user_id_frame, font=("Courier New", 14), width=22,
+        self.user_id_entry = tk.Entry(user_id_frame, font=("Courier New", 11), width=20,
                                     bg=self.entry_bg, fg=self.neon_blue, bd=0, relief=tk.FLAT)
         self.user_id_entry.pack()
-        self.user_id_entry.insert(0, "กรอกไอดีผู้ใช้ของคุณ")
+        self.user_id_entry.insert(0, "กรอกไอดีผู้ใช้")
         self.user_id_entry.config(fg="#666666")  # สีเทาอ่อนสำหรับ placeholder
         self.user_id_entry.bind('<FocusIn>', self.clear_user_placeholder)
         self.user_id_entry.bind('<FocusOut>', self.restore_user_placeholder)
         self.user_id_entry.focus()
         
         # Password Label
-        tk.Label(form_frame, text="รหัสผ่าน (PASSWORD)", 
+        tk.Label(form_frame, text="รหัสผ่าน", 
                  bg=self.bg_panel, fg=self.neon_green,
-                 font=("Courier New", 12, "bold")).pack(anchor='w', pady=(20, 5))
+                 font=("Courier New", 10, "bold")).pack(anchor='w', pady=(12, 2))
         
         # Password Entry - เพิ่มขอบและ background ที่ชัดเจน
-        pwd_frame = tk.Frame(form_frame, bg=self.entry_bg, padx=8, pady=8)
+        pwd_frame = tk.Frame(form_frame, bg=self.entry_bg, padx=6, pady=4)
         pwd_frame.pack(fill=tk.X)
-        self.unlock_code_entry = tk.Entry(pwd_frame, font=("Courier New", 14), width=22,
+        self.unlock_code_entry = tk.Entry(pwd_frame, font=("Courier New", 11), width=18,
                                         bg=self.entry_bg, fg=self.neon_purple, bd=0, relief=tk.FLAT, show="*")
-        self.unlock_code_entry.pack()
+        self.unlock_code_entry.pack(side=tk.LEFT, fill=tk.X, expand=True)
         
         # Show/Hide password - ใช้แค่ eye button
         eye_btn = tk.Button(pwd_frame, text="👁️", 
                             command=self.toggle_unlock_visibility,
-                            font=("Tahoma", 10),
+                            font=("Tahoma", 9),
                             bg=self.entry_bg, fg=self.neon_blue,
                             relief=tk.FLAT, bd=0, padx=5)
         eye_btn.pack(side=tk.RIGHT)
@@ -108,24 +108,24 @@ class LoginWindow:
         # Login Button - ปรับสีให้มองเห็นชัด
         self.login_btn = tk.Button(form_frame, text="🔓 เข้าสู่ระบบ", 
                                  command=self.attempt_login,
-                                 font=("Courier New", 14, "bold"),
-                                 bg=self.neon_orange, fg="#FFFFFF",  # สีส้มที่สว่างขึ้นพร้อมข้อความสีขาว
-                                 relief=tk.FLAT, bd=0, padx=30, pady=10,
+                                 font=("Courier New", 12, "bold"),
+                                 bg=self.neon_orange, fg="#FFFFFF",
+                                 relief=tk.FLAT, bd=0, padx=20, pady=6,
                                  activebackground=self.neon_green, activeforeground="#000000")
-        self.login_btn.pack(pady=25)
+        self.login_btn.pack(pady=18)
         
         # Status
         self.status_lbl = tk.Label(form_frame, text="", 
                                   bg=self.bg_panel, fg=self.neon_red,
-                                  font=("Courier New", 10))
+                                  font=("Courier New", 9))
         self.status_lbl.pack()
         
         # Footer
-        footer = tk.Frame(self.root, bg=self.bg_dark, pady=20)
+        footer = tk.Frame(self.root, bg=self.bg_dark, pady=8)
         footer.pack(fill=tk.X)
-        tk.Label(footer, text=">> ระบบพร้อมรับการเชื่อมต่อผู้ใช้ที่ได้รับอนุญาต", 
+        tk.Label(footer, text=">> พร้อมใช้งาน", 
                  bg=self.bg_dark, fg=self.neon_blue,
-                 font=("Courier New", 10)).pack()
+                 font=("Courier New", 8)).pack()
         
         self.is_pwd_visible = False
         
@@ -172,7 +172,7 @@ class UltimateCyborgTool:
     def __init__(self, root):
         self.root = root
         self.root.title("CYBORG NEXUS v3.6")
-        self.root.geometry("460x720") 
+        self.root.geometry("315x653") 
         self.root.resizable(False, False)
         self.root.attributes('-topmost', True) # ตรึงบนสุดหน้าจอเสมอ
         
@@ -278,7 +278,7 @@ class UltimateCyborgTool:
         """เปิดหน้าต่างตั้งค่าครบถ้วน"""
         settings_win = tk.Toplevel(self.root)
         settings_win.title("⚙️ ตั้งค่า CYBORG NEXUS")
-        settings_win.geometry("500x650")
+        settings_win.geometry("315x653")
         settings_win.configure(bg=self.bg_dark)
         settings_win.resizable(False, False)
         settings_win.transient(self.root)
