@@ -9,3 +9,10 @@ generated_outputs/*.jpg
 .DS_Store
 .fsc/
 api-key.txt
+# Kivy build files
+*.egg
+*.apk
+*.arm64-v8a
+bin/
+dist/
+buildozer/

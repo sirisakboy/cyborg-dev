@@ -1,0 +1,238 @@
+#:import dp kivy.metrics.dp
+
+<MainScreen>:
+    name: 'main'
+    
+    BoxLayout:
+        orientation: 'vertical'
+        padding: dp(10)
+        spacing: dp(10)
+        
+        canvas.before:
+            Color:
+                rgba: 0.04, 0.06, 0.08, 1
+            Rectangle:
+                pos: self.pos
+                size: self.size
+
+        # Header
+        Label:
+            size_hint_y: None
+            height: dp(50)
+            text: '[b]🤖 CYBORG NEXUS Mobile[/b]'
+            font_size: '20sp'
+            color: 0, 1, 1, 1
+            markup: True
+        
+        # Mode Selector
+        BoxLayout:
+            size_hint_y: None
+            height: dp(60)
+            spacing: dp(5)
+            
+            Button:
+                text: '🎨\nUI_DESIGN'
+                background_normal: ''
+                background_color: 0.06, 0.08, 0.12, 1
+                color: 0.2, 0.9, 0.1, 1
+                font_size: '10sp'
+                on_press: root.switch_mode('UI_DESIGN')
+                
+            Button:
+                text: '💻\nCODE'
+                background_normal: ''
+                background_color: 0.06, 0.08, 0.12, 1
+                color: 0.2, 0.9, 0.1, 1
+                font_size: '10sp'
+                on_press: root.switch_mode('CODE')
+                
+            Button:
+                text: '🔍\nBUG_SCAN'
+                background_normal: ''
+                background_color: 0.1, 0.08, 0.0, 1
+                color: 1, 0.8, 0, 1
+                font_size: '10sp'
+                on_press: root.switch_mode('BUG_SCAN')
+            
+            Button:
+                text: '🖼️\nIMAGE'
+                background_normal: ''
+                background_color: 0.06, 0.08, 0.12, 1
+                color: 0.8, 0.2, 0.8, 1
+                font_size: '10sp'
+                on_press: root.switch_mode('IMAGE')
+        
+        # Provider Selector
+        Spinner:
+            id: provider_spinner
+            text: 'TGPT Provider'
+            values: ['sky', 'pollinations', 'deepseek', 'groq', 'ollama']
+            background_normal: ''
+            background_color: 0.06, 0.08, 0.12, 1
+            color: 0, 1, 0.8, 1
+            size_hint_y: None
+            height: dp(40)
+            on_text: root.set_provider(self.text)
+        
+        # Command Input
+        TextInput:
+            id: cmd_input
+            hint_text: 'พิมพ์คำสั่ง หรือเลือกภาพสำหรับ BUG_SCAN'
+            background_normal: ''
+            background_color: 0.06, 0.08, 0.12, 1
+            foreground_color: 0.8, 0.9, 1, 1
+            font_name: 'Courier New'
+            size_hint_y: 0.4
+            multiline: True
+        
+        # Action Buttons
+        BoxLayout:
+            size_hint_y: None
+            height: dp(50)
+            spacing: dp(10)
+            
+            Button:
+                text: '⚡ EXECUTE'
+                background_normal: ''
+                background_color: 0.1, 0.3, 0.15, 1
+                color: 0, 1, 0.2, 1
+                font_size: '14sp'
+                on_press: root.execute_command()
+                
+            Button:
+                text: '💾 SAVE'
+                background_normal: ''
+                background_color: 0.1, 0.08, 0.2, 1
+                color: 1, 0.8, 0, 1
+                font_size: '14sp'
+                on_press: root.save_output()
+        
+        # Output Display
+        ScrollView:
+            Label:
+                id: output_label
+                size_hint_y: None
+                height: max(self.texture_size[1], dp(200))
+                text: root.output_text
+                text_size: self.width, None
+                halign: 'left'
+                valign: 'top'
+                font_name: 'Courier New'
+                font_size: '11sp'
+                markup: True
+                color: 0.9, 0.9, 1, 1
+
+
+<BugScanScreen>:
+    name: 'bug_scan'
+    
+    BoxLayout:
+        orientation: 'vertical'
+        padding: dp(10)
+        spacing: dp(10)
+        
+        canvas.before:
+            Color:
+                rgba: 0.04, 0.06, 0.08, 1
+            Rectangle:
+                pos: self.pos
+                size: self.size
+        
+        # Header
+        Label:
+            size_hint_y: None
+            height: dp(40)
+            text: root.header_text
+            font_size: '18sp'
+            color: 0, 1, 1, 1
+            markup: True
+        
+        # Camera Preview (shows when active)
+        Camera:
+            id: camera_widget
+            index: 0
+            resolution: (640, 480)
+            play: root.camera_active
+            size_hint_y: 0.4
+            opacity: 1 if root.camera_active else 0
+            canvas.after:
+                Color:
+                    rgba: 0, 1, 1, 0.3
+                Line:
+                    width: 2
+                    rectangle: self.x, self.y, self.width, self.height
+        
+        # Button Row
+        BoxLayout:
+            size_hint_y: None
+            height: dp(60)
+            spacing: dp(10)
+            
+            Button:
+                id: toggle_camera_btn
+                text: '📸 เปิดกล้อง' if not root.camera_active else '🛑 ปิดกล้อง'
+                background_normal: ''
+                background_color: 0.1, 0.2, 0.25, 1
+                color: 0, 1, 1, 1
+                font_size: '14sp'
+                on_press: root.toggle_camera()
+                
+            Button:
+                id: gallery_btn
+                text: '📂 เลือกรูป'
+                background_normal: ''
+                background_color: 0.1, 0.2, 0.25, 1
+                color: 0, 1, 1, 1
+                font_size: '14sp'
+                on_press: root.open_file_chooser()
+        
+        # Analyze Button (shows after capture)
+        Button:
+            text: '🔍 วิเคราะห์ภาพ'
+            size_hint_y: None
+            height: dp(45)
+            background_normal: ''
+            background_color: 0.1, 0.3, 0.15, 1
+            color: 0, 1, 0.2, 1
+            font_size: '14sp'
+            opacity: 1 if root.captured else 0.5
+            disabled: not root.captured
+            on_press: root.analyze_captured_image()
+        
+        # Captured Image Preview
+        AsyncImage:
+            id: preview_image
+            source: root.preview_path
+            size_hint_y: 0.3
+            keep_ratio: True
+            allow_stretch: True
+            opacity: 1 if root.preview_path else 0
+            
+        # Output Log
+        ScrollView:
+            size_hint_y: 0.35
+            Label:
+                id: log_label
+                size_hint_y: None
+                height: max(self.texture_size[1], dp(100))
+                text: root.log_text
+                text_size: self.width, None
+                halign: 'left'
+                valign: 'top'
+                font_name: 'Courier New'
+                font_size: '11sp'
+                markup: True
+                color: 0.9, 0.95, 1, 1
+        
+        # Back Button
+        Button:
+            text: '🔙 กลับหน้าหลัก'
+            size_hint_y: None
+            height: dp(35)
+            background_normal: ''
+            background_color: 0.15, 0.08, 0.08, 1
+            color: 1, 0.5, 0.5, 1
+            font_size: '12sp'
+            on_press: 
+                root.manager.current = 'main'
+                root.log_text = '>> พร้อมถ่ายภาพ / เลือกรูป...\n'
