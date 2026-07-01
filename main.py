@@ -124,21 +124,32 @@ class UltimateCyborgTool:
         self.do_login()
 
     def open_settings(self):
-        """เปิดหน้าต่างตั้งค่า API Key"""
+        """เปิดหน้าต่างตั้งค่าครบถ้วน"""
         settings_win = tk.Toplevel(self.root)
-        settings_win.title("⚙️ ตั้งค่า AI API")
-        settings_win.geometry("400x380")
+        settings_win.title("⚙️ ตั้งค่า CYBORG NEXUS")
+        settings_win.geometry("500x650")
         settings_win.configure(bg=self.bg_dark)
         settings_win.resizable(False, False)
         settings_win.transient(self.root)
         settings_win.grab_set()
         
-        # Title label
-        tk.Label(settings_win, text="🔑 ตั้งค่า API Key", 
+        # Create notebook (tabs)
+        notebook = ttk.Notebook(settings_win)
+        notebook.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
+        
+        # Style for notebook
+        style = ttk.Style()
+        style.configure("TNotebook", background=self.bg_dark)
+        style.configure("TNotebook.Tab", background=self.bg_panel, foreground=self.text_white)
+        
+        # === TAB 1: API Keys ===
+        api_tab = tk.Frame(notebook, bg=self.bg_dark)
+        notebook.add(api_tab, text="🔑 API Keys")
+        
+        tk.Label(api_tab, text="🔑 API Key Configuration", 
                  bg=self.bg_dark, fg=self.neon_purple, 
                  font=("Courier New", 12, "bold")).pack(pady=10)
         
-        # API Key entries สำหรับแต่ละผู้ให้บริการ
         providers = [
             ("OpenAI API Key", "OPENAI_API_KEY"),
             ("Gemini API Key", "GEMINI_API_KEY"),
@@ -146,9 +157,9 @@ class UltimateCyborgTool:
         ]
         self.api_entries = {}
         for i, (label, key) in enumerate(providers):
-            tk.Label(settings_win, text=label, bg=self.bg_dark, 
+            tk.Label(api_tab, text=label, bg=self.bg_dark, 
                      fg=self.text_white, font=("Tahoma", 10)).pack(pady=(10,0), anchor='w', padx=20)
-            entry = tk.Entry(settings_win, width=40, font=("Courier New", 10), 
+            entry = tk.Entry(api_tab, width=45, font=("Courier New", 10), 
                            bg=self.bg_panel, fg=self.neon_green, show="*")
             entry.pack(pady=2, padx=20, anchor='w')
             saved = os.environ.get(key, "")
@@ -158,18 +169,114 @@ class UltimateCyborgTool:
         
         # Show/Hide password toggle
         self.show_pwd_var = tk.BooleanVar()
-        show_chk = tk.Checkbutton(settings_win, text="👁️ แสดงรหัสผ่าน", 
+        show_chk = tk.Checkbutton(api_tab, text="👁️ แสดงรหัสผ่าน", 
                                 variable=self.show_pwd_var,
                                 command=self.toggle_password_visibility,
                                 bg=self.bg_dark, fg=self.neon_blue,
                                 font=("Tahoma", 9))
-        show_chk.pack(pady=5)
+        show_chk.pack(pady=10)
         
-        # ปุ่มบันทึกและปิด
+        # === TAB 2: Model Selection ===
+        model_tab = tk.Frame(notebook, bg=self.bg_dark)
+        notebook.add(model_tab, text="🤖 Models")
+        
+        tk.Label(model_tab, text="🤖 เลือก AI Model", 
+                 bg=self.bg_dark, fg=self.neon_blue, 
+                 font=("Courier New", 12, "bold")).pack(pady=10)
+        
+        # TGPT Provider selection
+        tk.Label(model_tab, text="TGPT Provider", bg=self.bg_dark, 
+                 fg=self.text_white, font=("Tahoma", 10)).pack(anchor='w', padx=20)
+        self.model_provider_var = tk.StringVar(value=self.sub_option_var.get())
+        model_combo = ttk.Combobox(model_tab, textvariable=self.model_provider_var,
+                                 font=("Tahoma", 10), width=30)
+        model_combo["values"] = ["sky", "pollinations", "deepseek", "groq", "ollama"]
+        model_combo.pack(pady=5, padx=20)
+        
+        # Ollama models
+        tk.Label(model_tab, text="Ollama Models (เมื่อเลือก ollama)", 
+                 bg=self.bg_dark, fg=self.neon_green, font=("Tahoma", 9)).pack(anchor='w', padx=25)
+        self.ollama_model_var = tk.StringVar(value=os.environ.get("OLLAMA_DEFAULT_MODEL", "llama3"))
+        ollama_combo = ttk.Combobox(model_tab, textvariable=self.ollama_model_var,
+                                    font=("Tahoma", 9), width=25)
+        ollama_combo["values"] = ["llama3", "llama3.2", "mistral", "codellama", "phi3", "gemma", "qwen2.5"]
+        ollama_combo.pack(pady=5, padx=20)
+        
+        # === TAB 3: Prompt Templates ===
+        prompt_tab = tk.Frame(notebook, bg=self.bg_dark)
+        notebook.add(prompt_tab, text="💬 Prompts")
+        
+        tk.Label(prompt_tab, text="💬 ปรับแต่ง Prompt Template", 
+                 bg=self.bg_dark, fg=self.neon_yellow, 
+                 font=("Courier New", 12, "bold")).pack(pady=10)
+        
+        self.prompt_templates = {}
+        modes_th = [
+            ("UI_DESIGN", "UI/UX ออกแบบ"),
+            ("CODE", "โค้ดโปรแกรม"),
+            ("BUG_SCAN", "สแกนบั๊ก"),
+            ("IMAGE", "สร้างภาพ")
+        ]
+        
+        for mode, label in modes_th:
+            tk.Label(prompt_tab, text=f"{label} Prompt", bg=self.bg_dark, 
+                     fg=self.text_white, font=("Tahoma", 9)).pack(anchor='w', padx=20, pady=(5,0))
+            txt = tk.Text(prompt_tab, width=50, height=3, font=("Courier New", 9),
+                          bg=self.bg_panel, fg=self.neon_green)
+            txt.pack(pady=2, padx=20)
+            # โหลด template ที่บันทึกไว้
+            saved_template = os.environ.get(f"PROMPT_{mode}", "")
+            txt.insert("1.0", saved_template if saved_template else f"[{mode} default template]")
+            self.prompt_templates[mode] = txt
+        
+        # === TAB 4: Language ===
+        lang_tab = tk.Frame(notebook, bg=self.bg_dark)
+        notebook.add(lang_tab, text="🌐 Language")
+        
+        tk.Label(lang_tab, text="🌐 เลือกภาษา", 
+                 bg=self.bg_dark, fg=self.neon_pink, 
+                 font=("Courier New", 12, "bold")).pack(pady=10)
+        
+        self.lang_var = tk.StringVar(value=os.environ.get("APP_LANGUAGE", "th"))
+        lang_frame = tk.Frame(lang_tab, bg=self.bg_dark)
+        lang_frame.pack(pady=10)
+        tk.Radiobutton(lang_frame, text="ไทย (TH)", variable=self.lang_var, value="th",
+                      bg=self.bg_dark, fg=self.neon_green, font=("Tahoma", 10)).pack(side=tk.LEFT, padx=10)
+        tk.Radiobutton(lang_frame, text="English (EN)", variable=self.lang_var, value="en",
+                      bg=self.bg_dark, fg=self.neon_blue, font=("Tahoma", 10)).pack(side=tk.LEFT, padx=10)
+        
+        # === TAB 5: Cloud Sync ===
+        cloud_tab = tk.Frame(notebook, bg=self.bg_dark)
+        notebook.add(cloud_tab, text="☁️ Cloud")
+        
+        tk.Label(cloud_tab, text="☁️ ซิงค์กับ Cloud", 
+                 bg=self.bg_dark, fg=self.neon_blue, 
+                 font=("Courier New", 12, "bold")).pack(pady=10)
+        
+        tk.Label(cloud_tab, text="Sync ไฟล์ผลลัพธ์ไปยัง Cloud", 
+                 bg=self.bg_dark, fg=self.text_white, font=("Tahoma", 10)).pack(pady=5)
+        
+        self.sync_var = tk.BooleanVar(value=os.environ.get("CLOUD_SYNC", "false").lower() == "true")
+        sync_chk = tk.Checkbutton(cloud_tab, text="🔄 เปิดใช้ Cloud Sync", 
+                                  variable=self.sync_var,
+                                  bg=self.bg_dark, fg=self.neon_green,
+                                  font=("Tahoma", 10))
+        sync_chk.pack(pady=5)
+        
+        tk.Label(cloud_tab, text="Webhook URL (optional)", bg=self.bg_dark, 
+                 fg=self.text_white, font=("Tahoma", 9)).pack(anchor='w', padx=20, pady=(10,0))
+        self.webhook_entry = tk.Entry(cloud_tab, width=45, font=("Courier New", 9),
+                                      bg=self.bg_panel, fg=self.neon_blue)
+        self.webhook_entry.pack(pady=2, padx=20)
+        webhook_saved = os.environ.get("WEBHOOK_URL", "")
+        if webhook_saved:
+            self.webhook_entry.insert(0, webhook_saved)
+        
+        # Save button for all tabs
         btn_frame = tk.Frame(settings_win, bg=self.bg_dark)
         btn_frame.pack(pady=15)
-        tk.Button(btn_frame, text="💾 บันทึก", command=self.save_api_keys,
-                  bg=self.bg_panel, fg=self.neon_blue,
+        tk.Button(btn_frame, text="💾 บันทึกทั้งหมด", command=self.save_all_settings,
+                  bg=self.bg_panel, fg=self.neon_green,
                   font=("Courier New", 10, "bold")).pack(side=tk.LEFT, padx=5)
         tk.Button(btn_frame, text="❌ ปิด", command=settings_win.destroy,
                   bg=self.bg_panel, fg=self.neon_red,
@@ -181,21 +288,50 @@ class UltimateCyborgTool:
         for entry in self.api_entries.values():
             entry.config(show="" if show else "*")
 
-    def save_api_keys(self):
-        """บันทึก API Key ลง environment variables"""
+    def save_all_settings(self):
+        """บันทึกการตั้งค่าทั้งหมด"""
+        # Save API Keys
         for key, entry in self.api_entries.items():
             value = entry.get().strip()
             if value:
                 os.environ[key] = value
         
+        # Save Model settings
+        os.environ["TGPT_PROVIDER"] = self.model_provider_var.get()
+        os.environ["OLLAMA_DEFAULT_MODEL"] = self.ollama_model_var.get()
+        
+        # Save Prompt templates
+        for mode, txt_widget in self.prompt_templates.items():
+            template = txt_widget.get("1.0", tk.END).strip()
+            if template and "default" not in template.lower():
+                os.environ[f"PROMPT_{mode}"] = template
+        
+        # Save Language
+        os.environ["APP_LANGUAGE"] = self.lang_var.get()
+        
+        # Save Cloud settings
+        os.environ["CLOUD_SYNC"] = "true" if self.sync_var.get() else "false"
+        webhook = self.webhook_entry.get().strip()
+        if webhook:
+            os.environ["WEBHOOK_URL"] = webhook
+        
         try:
-            # สร้าง/อัปเดต .env file
+            # Save to .env file
             env_path = os.path.join(BASE_PATH, ".env")
             with open(env_path, "w") as f:
                 for key in self.api_entries.keys():
-                    value = self.api_entries[key].get().strip()
-                    f.write(f"{key}={value}\n")
-            messagebox.showinfo("SUCCESS", "บันทึก API Key สำเร็จ!")
+                    f.write(f"{key}={self.api_entries[key].get().strip()}\n")
+                f.write(f"TGPT_PROVIDER={self.model_provider_var.get()}\n")
+                f.write(f"OLLAMA_DEFAULT_MODEL={self.ollama_model_var.get()}\n")
+                for mode, txt_widget in self.prompt_templates.items():
+                    template = txt_widget.get("1.0", tk.END).strip()
+                    if template and "default" not in template.lower():
+                        f.write(f"PROMPT_{mode}={template}\n")
+                f.write(f"APP_LANGUAGE={self.lang_var.get()}\n")
+                f.write(f"CLOUD_SYNC={'true' if self.sync_var.get() else 'false'}\n")
+                if webhook:
+                    f.write(f"WEBHOOK_URL={webhook}\n")
+            messagebox.showinfo("SUCCESS", "บันทึกการตั้งค่าทั้งหมดสำเร็จ!")
         except Exception as e:
             messagebox.showerror("ERROR", f"บันทึกล้มเหลว: {str(e)}")
 
@@ -366,6 +502,9 @@ class UltimateCyborgTool:
             # บันทึกลงไฟล์
             with open(filepath, "w", encoding="utf-8") as f:
                 f.write(content)
+
+            # Cloud Sync - ส่งไฟล์ไปยัง Webhook หากเปิดใช้
+            self.sync_to_cloud(filepath, mode)
 
             messagebox.showinfo(
                 "SAVED",
