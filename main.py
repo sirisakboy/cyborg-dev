@@ -99,6 +99,18 @@ class UltimateCyborgTool:
         self.open_folder_btn = tk.Button(btn_frame, text="📤", command=self.open_output_folder,
                                font=("Courier New", 9, "bold"), bg="#1A2435", fg=self.neon_blue, relief=tk.FLAT, bd=1)
         self.open_folder_btn.pack(side=tk.LEFT, padx=1, fill=tk.X, expand=True)
+        
+        # Settings button for API Key configuration
+        self.settings_btn = tk.Button(btn_frame, text="⚙️", command=self.open_settings,
+                               font=("Courier New", 9, "bold"), bg="#2A1F3D", 
+                               fg=self.neon_purple, relief=tk.FLAT, bd=1)
+        self.settings_btn.pack(side=tk.LEFT, padx=1, fill=tk.X, expand=True)
+        
+        # Import document button for CODE/UI_DESIGN modes
+        self.import_btn = tk.Button(btn_frame, text="📄", command=self.import_document,
+                               font=("Courier New", 9, "bold"), bg="#2A1F3D", 
+                               fg=self.neon_green, relief=tk.FLAT, bd=1)
+        self.import_btn.pack(side=tk.LEFT, padx=1, fill=tk.X, expand=True)
 
         # Create remaining UI
         # Create remaining UI
@@ -110,6 +122,98 @@ class UltimateCyborgTool:
     def on_provider_select(self):
         """Auto-login when provider is selected"""
         self.do_login()
+
+    def open_settings(self):
+        """เปิดหน้าต่างตั้งค่า API Key"""
+        settings_win = tk.Toplevel(self.root)
+        settings_win.title("⚙️ ตั้งค่า AI API")
+        settings_win.geometry("400x380")
+        settings_win.configure(bg=self.bg_dark)
+        settings_win.resizable(False, False)
+        settings_win.transient(self.root)
+        settings_win.grab_set()
+        
+        # Title label
+        tk.Label(settings_win, text="🔑 ตั้งค่า API Key", 
+                 bg=self.bg_dark, fg=self.neon_purple, 
+                 font=("Courier New", 12, "bold")).pack(pady=10)
+        
+        # API Key entries สำหรับแต่ละผู้ให้บริการ
+        providers = [
+            ("OpenAI API Key", "OPENAI_API_KEY"),
+            ("Gemini API Key", "GEMINI_API_KEY"),
+            ("Ollama Model", "OLLAMA_MODEL")
+        ]
+        self.api_entries = {}
+        for i, (label, key) in enumerate(providers):
+            tk.Label(settings_win, text=label, bg=self.bg_dark, 
+                     fg=self.text_white, font=("Tahoma", 10)).pack(pady=(10,0), anchor='w', padx=20)
+            entry = tk.Entry(settings_win, width=40, font=("Courier New", 10), 
+                           bg=self.bg_panel, fg=self.neon_green, show="*")
+            entry.pack(pady=2, padx=20, anchor='w')
+            saved = os.environ.get(key, "")
+            if saved and saved != "sk-your-openai-api-key-here":
+                entry.insert(0, saved)
+            self.api_entries[key] = entry
+        
+        # Show/Hide password toggle
+        self.show_pwd_var = tk.BooleanVar()
+        show_chk = tk.Checkbutton(settings_win, text="👁️ แสดงรหัสผ่าน", 
+                                variable=self.show_pwd_var,
+                                command=self.toggle_password_visibility,
+                                bg=self.bg_dark, fg=self.neon_blue,
+                                font=("Tahoma", 9))
+        show_chk.pack(pady=5)
+        
+        # ปุ่มบันทึกและปิด
+        btn_frame = tk.Frame(settings_win, bg=self.bg_dark)
+        btn_frame.pack(pady=15)
+        tk.Button(btn_frame, text="💾 บันทึก", command=self.save_api_keys,
+                  bg=self.bg_panel, fg=self.neon_blue,
+                  font=("Courier New", 10, "bold")).pack(side=tk.LEFT, padx=5)
+        tk.Button(btn_frame, text="❌ ปิด", command=settings_win.destroy,
+                  bg=self.bg_panel, fg=self.neon_red,
+                  font=("Courier New", 10, "bold")).pack(side=tk.LEFT, padx=5)
+
+    def toggle_password_visibility(self):
+        """Toggle password visibility in settings"""
+        show = self.show_pwd_var.get()
+        for entry in self.api_entries.values():
+            entry.config(show="" if show else "*")
+
+    def save_api_keys(self):
+        """บันทึก API Key ลง environment variables"""
+        for key, entry in self.api_entries.items():
+            value = entry.get().strip()
+            if value:
+                os.environ[key] = value
+        
+        try:
+            # สร้าง/อัปเดต .env file
+            env_path = os.path.join(BASE_PATH, ".env")
+            with open(env_path, "w") as f:
+                for key in self.api_entries.keys():
+                    value = self.api_entries[key].get().strip()
+                    f.write(f"{key}={value}\n")
+            messagebox.showinfo("SUCCESS", "บันทึก API Key สำเร็จ!")
+        except Exception as e:
+            messagebox.showerror("ERROR", f"บันทึกล้มเหลว: {str(e)}")
+
+    def import_document(self):
+        """นำเข้าไฟล์เอกสารเพื่อวิเคราะห์โค้ด/UI"""
+        file_path = filedialog.askopenfilename(
+            filetypes=[("Document Files", "*.txt *.md *.py *.js *.html *.css *.json *.xml *.yaml *.yml")]
+        )
+        if file_path:
+            try:
+                with open(file_path, "r", encoding="utf-8") as f:
+                    content = f.read()
+                # ใส่เนื้อหาลงใน cmd_entry
+                self.cmd_entry.delete("1.0", tk.END)
+                self.cmd_entry.insert("1.0", f"# File: {os.path.basename(file_path)}\n\n{content}")
+                messagebox.showinfo("SUCCESS", f"โหลดไฟล์สำเร็จ!\n{os.path.basename(file_path)}")
+            except Exception as e:
+                messagebox.showerror("ERROR", f"ไม่สามารถอ่านไฟล์: {str(e)}")
 
     def create_ui_rest(self):
         input_frame = tk.LabelFrame(root, text=" [ ENTER_COMMAND_PROMPT ] ", font=("Courier New", 9, "bold"),
@@ -390,18 +494,36 @@ class UltimateCyborgTool:
         self.img_preview_lbl.pack_forget()
         self.log_text.delete(1.0, tk.END)
         
+        # ตรวจจับเนื้อหาจากไฟล์ที่ถูกนำเข้า
+        file_content = None
+        file_name = None
+        if prompt.startswith("# File:"):
+            # แยกเนื้อหาจากไฟล์
+            parts = prompt.split("\n\n", 1)
+            if len(parts) > 1:
+                file_name = parts[0].replace("# File:", "").strip()
+                file_content = parts[1]
+            else:
+                file_content = prompt
+        
         if mode == "BUG_SCAN":
             if not self.image_path:
                 messagebox.showwarning("WARNING", "กรุณากดปุ่ม UPLOAD SCREENSHOT เพื่อเลือกภาพหน้าจอบั๊กก่อน!")
                 return
             self.call_worker_vision_api()
         elif mode == "UI_DESIGN":
-            if not prompt or prompt.startswith("เช่น"):
+            # หากมีเนื้อหาจากไฟล์ ให้ปรับ prompt ให้เหมาะกับการวิเคราะห์ UI
+            if file_content:
+                prompt = f"วิเคราะห์โค้ด/UI จากไฟล์ '{file_name}' และให้ข้อเสนอแนะการออกแบบ: {file_content[:3000]}"
+            elif not prompt or prompt.startswith("เช่น"):
                 messagebox.showwarning("WARNING", "กรุณากรอกคำสั่งบรีฟงานด้วย!")
                 return
             self.call_worker_api(prompt, is_design=True)
         elif mode == "CODE":
-            if not prompt or prompt.startswith("เช่น"):
+            # หากมีเนื้อหาจากไฟล์ ให้ปรับ prompt ให้เหมาะกับการวิเคราะห์โค้ด
+            if file_content:
+                prompt = f"วิเคราะห์โค้ดจากไฟล์ '{file_name}' และอธิบาย/ปรับปรุง: {file_content[:3000]}"
+            elif not prompt or prompt.startswith("เช่น"):
                 messagebox.showwarning("WARNING", "กรุณากรอกคำสั่งบรีฟงานด้วย!")
                 return
             self.call_worker_api(prompt, is_design=False)
