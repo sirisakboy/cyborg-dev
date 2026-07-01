@@ -611,25 +611,19 @@ class UltimateCyborgTool:
         # เพิ่ม placeholder text
         self.cmd_entry.insert(tk.END, "ป้อนคำสั่งที่นี่...")
 
-        # --- [3. MODE SELECTOR (เพิ่มตัวเลือก BUG_SCAN)] ---
+        # --- [3. MODE SELECTOR - ใช้ Combobox เพื่อประหยัดเวลา] ---
         mode_frame = tk.Frame(self.root, bg=self.bg_dark)
         mode_frame.pack(fill=tk.X, padx=15, pady=2)
         
-        self.current_mode = tk.StringVar(value="UI_DESIGN")
+        tk.Label(mode_frame, text="โหมดการทำงาน:", bg=self.bg_dark, 
+                 fg=self.neon_green, font=("Courier New", 9, "bold")).pack(side=tk.LEFT)
         
-        modes = [
-            ("🎨 UI Design", "UI_DESIGN"), 
-            ("💻 Code", "CODE"), 
-            ("🔍 Bug Scan", "BUG_SCAN"),
-            ("📂 Code Review", "CODE_REVIEW"),
-            ("🖼️ ภาพ", "IMAGE")
-        ]
-        for text, mode_val in modes:
-            rb = tk.Radiobutton(mode_frame, text=text, variable=self.current_mode, value=mode_val,
-                                font=("Courier New", 8, "bold"), fg=self.text_white, bg=self.bg_dark,
-                                activebackground=self.bg_dark, activeforeground=self.neon_blue,
-                                selectcolor=self.bg_panel, indicatoron=0, bd=1, relief=tk.FLAT, padx=4, pady=4)
-            rb.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=1)
+        self.current_mode = tk.StringVar(value="UI_DESIGN")
+        self.mode_combo = ttk.Combobox(mode_frame, textvariable=self.current_mode,
+                                     font=("Tahoma", 9), width=20)
+        self.mode_combo["values"] = ["🎨 UI Design", "💻 Code", "🔍 Bug Scan", "📂 Code Review", "🖼️ ภาพ"]
+        self.mode_combo.pack(side=tk.LEFT, padx=5)
+        self.mode_combo.current(0)  # ตั้งค่าเริ่มต้น
 
         # --- [4. DISPLAY & OUTPUT LOG PANEL] ---
         self.display_frame = tk.LabelFrame(self.root, text="ผลลัพธ์", font=("Courier New", 9, "bold"),
@@ -751,8 +745,16 @@ class UltimateCyborgTool:
             return
 
         try:
-            # สร้างชื่อไฟล์: โหมด_YYYY-MM-DD_HH-MM-SS.txt
-            mode = self.current_mode.get() or "OUTPUT"
+            # แปลค่าจาก combobox เป็นค่าภาษาอังกฤษสำหรับชื่อไฟล์
+            mode_display = self.current_mode.get() or "OUTPUT"
+            mode_map = {
+                "🎨 UI Design": "UI_DESIGN",
+                "💻 Code": "CODE",
+                "🔍 Bug Scan": "BUG_SCAN",
+                "📂 Code Review": "CODE_REVIEW",
+                "🖼️ ภาพ": "IMAGE"
+            }
+            mode = mode_map.get(mode_display, mode_display.replace(" ", "_"))
             timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
             filename = f"{mode}_{timestamp}.txt"
             filepath = os.path.join(self.output_dir, filename)
@@ -800,7 +802,16 @@ class UltimateCyborgTool:
 
     def save_output(self):
         """บันทึกผลลัพธ์ตามโหมดปัจจุบัน"""
-        mode = self.current_mode.get()
+        mode_display = self.current_mode.get()
+        # แปลค่าจาก combobox
+        mode_map = {
+            "🎨 UI Design": "UI_DESIGN",
+            "💻 Code": "CODE",
+            "🔍 Bug Scan": "BUG_SCAN",
+            "📂 Code Review": "CODE_REVIEW",
+            "🖼️ ภาพ": "IMAGE"
+        }
+        mode = mode_map.get(mode_display, mode_display.replace(" ", "_"))
         content = self.log_text.get(1.0, tk.END).strip()
         
         if not content:
@@ -903,7 +914,17 @@ class UltimateCyborgTool:
 
     def execute_generation(self):
         prompt = self.cmd_entry.get("1.0", tk.END).strip()
-        mode = self.current_mode.get()
+        mode_display = self.current_mode.get()
+        
+        # แปลค่าจาก combobox เป็นค่าที่โค้ดใช้งาน
+        mode_map = {
+            "🎨 UI Design": "UI_DESIGN",
+            "💻 Code": "CODE",
+            "🔍 Bug Scan": "BUG_SCAN",
+            "📂 Code Review": "CODE_REVIEW",
+            "🖼️ ภาพ": "IMAGE"
+        }
+        mode = mode_map.get(mode_display, mode_display)
         
         self.log_text.pack(fill=tk.BOTH, expand=True)
         self.img_preview_lbl.pack_forget()
